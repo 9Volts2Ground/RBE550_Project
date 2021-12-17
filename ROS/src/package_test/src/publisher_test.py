@@ -13,7 +13,7 @@ def publisher():
 
     rospy.init_node( "publisher", anonymous=True)
 
-    rate = rospy.Rate(10) # 10Hz
+    rate = rospy.Rate(1) # 1Hz
     t_start = time.time()
 
     while not rospy.is_shutdown():
