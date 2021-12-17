@@ -1,0 +1,8 @@
+*.asv
+*.log
+*.aux
+*.zip
+*pycache*
+*.jpg
+*.csv
+
