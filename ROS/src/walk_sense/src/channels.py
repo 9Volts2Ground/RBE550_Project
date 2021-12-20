@@ -3,5 +3,5 @@
 class channels:
     def __init__(self):
         
-        self.joint_angles = "joint_angles"
+        self.leg_states = "leg_states"
 
