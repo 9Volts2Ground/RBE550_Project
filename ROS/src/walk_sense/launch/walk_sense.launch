@@ -1,0 +1,5 @@
+<launch>
+
+    <node pkg="walk_sense" name="walk_forward" type="walk_forward.py" output="screen" />
+
+</launch>
