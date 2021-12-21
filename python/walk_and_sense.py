@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import multiprocessing
 from multiprocessing import Process, Lock, Value, Array, Event
 import numpy as np
@@ -10,12 +8,7 @@ import time
 import gait
 import hardware
 from hardware_control_process import hardware_control_process
-from kalman_process import kalman_process
-from plot_foot_trajectory import plot_foot_trajectory
-from seeker_sweep_map import seeker_sweep_map
 from walk_forward import walk_forward
-
-plt.style.use('seaborn-whitegrid') 
 
 # Multiprocessing example:
 # https://pretagteam.com/question/sharing-object-class-instance-using-multiprocessing-managers
@@ -69,7 +62,7 @@ def walk_and_sense( plot = False, log = True ):
 
     # Define walking start/stop times
     t_start = time.time()
-    t_end = t_start + 15
+    t_end = t_start + 8
 
     #--------------------------------------------------------------------------
     # Define processes
@@ -112,54 +105,12 @@ def walk_and_sense( plot = False, log = True ):
         foot_off_ground, # Multiprocess array, flag for hardware LED
         joint_angles,) ) # Multiprocess array
 
-
-    seeker = Process( target=seeker_sweep_map, args=(
-        walk_status, # Multiprocessing flag
-        seeker_angles, # Multiprocess array
-        measured_range, # Multiprocess value
-        T_b2c, # Multiprocessing array, transformation between body and camera
-        T_i2b, # Multiprocess array, transformation between inertial and body
-        move_seeker_request, # Multiprocess event, seeker needs to do stuff
-        seeker_done_moving, # Multiprocess event, seeker has been told to move
-        take_range_measure, # Multiprocess event, seeker needs to take measurement
-        range_measure_returned, # Multiprocess event, seeker has obtained a range
-        plot,
-        log,) )
-
-    # Initialize Kalman value
-    grav_vector = hrd.IMU.gravity_inertial
-    gyro_bias = hrd.IMU.gyro_mean
-    accel_std = hrd.IMU.accel_std
-    gyro_std = hrd.IMU.gyro_std
-
-    kalm = Process( target=kalman_process, args=(
-        t_start,
-        walk_status, # Multiprocess value
-        started_walking,
-        body_state_inertial,
-        grav_vector, # Multiprocess array
-        gyro_bias, # Multiprocess array
-        accel_std, # Multiprocess value # Maybe just pass these in initially?
-        gyro_std, # Multiprocess value
-        heading, # Multiprocess array
-        accel_measured, # Multiprocess array
-        gyro_measured, # Multiprocess array
-        request_IMU_data, # Multiprocess event
-        IMU_data_ready, # Multiprocess event
-        plot,
-        log,
-        ))
-
     #--------------------------------------------------------------------------
     # Run processes
     hrd_control.start()
-    seeker.start()
-    kalm.start()
     walk.start()
 
     hrd_control.join()
-    seeker.join()
-    kalm.join()
     walk.join()
 
 
