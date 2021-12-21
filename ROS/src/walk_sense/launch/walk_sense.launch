@@ -2,5 +2,6 @@
 
     <node pkg="walk_sense" name="walk_forward" type="walk_forward.py" output="screen" />
     <node pkg="walk_sense" name="move_motors_node" type="move_motors_node.py" output="screen" />
+    <node pkg="walk_sense" name="led_control_node" type="led_control_node.py" output="screen" />
 
 </launch>
