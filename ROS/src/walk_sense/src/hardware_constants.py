@@ -3,7 +3,7 @@ import numpy as np
 class hardware_constants:
 
     def __init__(self):
-        
+
         # Vector from body center to hip joints, meters
         self.s = np.array([ [ -0.055, 0.076162, 0.048 ],        # Front left
                             [  0.055, 0.076162, 0.048 ],        # Front right
@@ -72,7 +72,7 @@ class hardware_constants:
                                        [1.0,  0.0, 0.0, self.s[1,0]],
                                        [0.0,  0.0, 1.0, 0.13858],
                                        [0.0,  0.0, 0.0, 1.0] ] )
-        
+
         self.seeker_extension_length = 0.03226 # Length of extension from el motor axis to camera face
 
         self.seeker_channel = np.array( [1, 0] )
@@ -82,5 +82,12 @@ class hardware_constants:
         self.seekerMax = np.array( [ 160, 180 ] )
 
         self.seekerOrientation = np.array( [1, 1] )
+
+        #------------------------------------------------------------
+        # LED info
+        #------------------------------------------------------------
+        self.leg2led = [6, 0, 5, 1, 4, 2] # Mapping between leg and LED index
+        self.seeker_led = 3 # LED array number
+
 
 

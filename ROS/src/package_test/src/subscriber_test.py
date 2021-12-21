@@ -7,7 +7,7 @@ def terminal_print(msg):
     print("New message: ", msg)
 
 def subscriber():
-    
+
     rospy.init_node( "subscriber", anonymous=True)
     rospy.Subscriber("channel2", test, terminal_print)
 
