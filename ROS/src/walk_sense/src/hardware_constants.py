@@ -1,5 +1,8 @@
 import numpy as np
 
+# Custom libraries
+from rotation import rotrx, rotry, rotrz
+
 class hardware_constants:
 
     def __init__(self):
@@ -88,6 +91,45 @@ class hardware_constants:
         #------------------------------------------------------------
         self.leg2led = [6, 0, 5, 1, 4, 2] # Mapping between leg and LED index
         self.seeker_led = 3 # LED array number
+
+    #==========================================================================
+    def transform_body2shoulder( self, leg ):
+        """
+        Args:
+            leg (integer): Which leg to get transformation for
+        Returns:
+            T_body2shoulder [4x4 np array]: Transformation from body frame to shoulder joint of leg
+        """
+
+        T_body2shoulder = np.array( [[ np.cos(self.alpha_offset[leg]), -np.sin(self.alpha_offset[leg]), 0, self.s[0,leg] ],
+                                     [ np.sin(self.alpha_offset[leg]),  np.cos(self.alpha_offset[leg]), 0, self.s[1,leg] ],
+                                     [ 0.0, 0.0, 1.0, self.s[2,leg] ],
+                                     [ 0.0, 0.0, 0.0, 1.0 ] ] )
+        return T_body2shoulder
+
+    #==========================================================================
+    def rotation_inertial2body( self, body_state_inertial ):
+        """Uses individual Euler angles, calculates rotation matrix between inertial and body frames.
+        From body frame: rotate yaw, pitch roll
+        """
+
+        R_roll = rotry( body_state_inertial[11] )
+        R_pitch = rotrx( body_state_inertial[10] )
+        R_yaw = rotrz( body_state_inertial[9])
+
+        return R_roll @ R_pitch @ R_yaw # Body orientation matrix in inertial frame
+
+    #==========================================================================
+    def transform_inertial2body( self, body_state_inertial ):
+        """
+        Calculates transformation matrix from inertial to body frame
+        Returns: T_inertial2body [4x4 numpy array]
+        """
+        T_inertial2body = np.identity(4)
+        T_inertial2body[0:3,0:3] = self.rotation_inertial2body( body_state_inertial )
+        T_inertial2body[0:3,3] = body_state_inertial[0:3]
+
+        return T_inertial2body
 
 
 
