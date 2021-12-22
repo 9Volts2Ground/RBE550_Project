@@ -59,7 +59,7 @@ class hardware:
         # Set up IMU sensor
         from IMU import IMU
         self.IMU = IMU( self.wanda )
-        self.body_state_inertial[9:12] = self.IMU.euler_angles
+        # self.body_state_inertial[9:12] = self.IMU.euler_angles
 
         #======================================================================
         # Leg parameters

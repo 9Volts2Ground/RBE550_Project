@@ -3,8 +3,6 @@ import numpy as np
 import gait
 
 def foot_trajectory_planning( phase, gait ):
-    
-    heading_angle = np.pi/6 # Direction of strafe, around hexapod body z axis, radians
 
     # Initialize foot position array
     foot_position = np.zeros( shape=(3,6) )
@@ -27,14 +25,10 @@ def foot_trajectory_planning( phase, gait ):
             else:
                 up_phase = (phase - gait.phase_offset[leg]) / (1 - gait.beta)
 
-            # foot_position[:,leg] = [gait.ground_x[leg],
-            #                         ( gait.ground_y_max[leg] - gait.ground_y_min[leg] ) * up_phase + gait.ground_y_min[leg],
-            #                         gait.foot_height * np.sin( np.pi * up_phase ) - gait.body_height ]
-
             # Calculate position of foot at this phase
-            r_phase = (2 * up_phase - 1) * gait.stride_radius  
-            foot_position[:,leg] = [-np.sin(heading_angle) * r_phase + gait.foot_center[0,leg],
-                                     np.cos(heading_angle) * r_phase + gait.foot_center[1,leg],
+            r_phase = (2 * up_phase - 1) * gait.stride_radius
+            foot_position[:,leg] = [-np.sin(gait.strafe_angle) * r_phase + gait.foot_center[0,leg],
+                                     np.cos(gait.strafe_angle) * r_phase + gait.foot_center[1,leg],
                                      (gait.foot_height - gait.foot_center[2,leg]) * np.sin(np.pi*up_phase) + gait.foot_center[2,leg] ]
 
 
@@ -52,11 +46,11 @@ def foot_trajectory_planning( phase, gait ):
             else:
                 # Before foot lift off
                 down_phase = (phase + 1 - (gait.phase_offset[leg] + 1/3)) / gait.beta
-                
+
             # Calculate position of foot on the ground at this phase
-            r_phase = (2 * down_phase - 1) * gait.stride_radius  
-            foot_position[:,leg] = [ np.sin(heading_angle) * r_phase + gait.foot_center[0,leg],
-                                    -np.cos(heading_angle) * r_phase + gait.foot_center[1,leg],
+            r_phase = (2 * down_phase - 1) * gait.stride_radius
+            foot_position[:,leg] = [ np.sin(gait.strafe_angle) * r_phase + gait.foot_center[0,leg],
+                                    -np.cos(gait.strafe_angle) * r_phase + gait.foot_center[1,leg],
                                      gait.foot_center[2,leg] ]
 
             foot_off_ground[leg] = 0

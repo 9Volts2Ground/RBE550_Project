@@ -62,12 +62,13 @@ def walk_and_sense( plot = False, log = True ):
 
     # Define walking start/stop times
     t_start = time.time()
-    t_end = t_start + 8
+    t_end = t_start + 6
 
     #--------------------------------------------------------------------------
     # Define processes
     hrd_control = Process( target=hardware_control_process, args=(
         hrd,
+        gt,
         t_start,
         gt.velocity, # Multiprocess value, v * dt
         body_state_inertial, # Multiprocess array

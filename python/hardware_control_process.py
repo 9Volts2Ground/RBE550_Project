@@ -5,12 +5,14 @@ import pandas as pd
 import time
 
 # Custom libraries
+import gait
 import hardware
 from plot_foot_trajectory import plot_foot_trajectory
 
 
 def hardware_control_process(
         hrd,
+        gait,
         t_start,
         velocity, # Multiprocess value, v * dt
         body_state_inertial, # Multiprocess array
@@ -63,13 +65,16 @@ def hardware_control_process(
             fwd_displacement = velocity * dt
             t_previous = t
 
-            inertial_displacement = hrd.rotation_inertial2body() @ np.array([0, fwd_displacement, 0]).T
+            displacement_vector = np.array( [ -np.sin(gait.strafe_angle) * fwd_displacement,
+                                              np.cos(gait.strafe_angle) * fwd_displacement,
+                                              0.0] )
+
+            inertial_displacement = hrd.rotation_inertial2body() @ displacement_vector.T
 
             hrd.body_state_inertial[0:3] += inertial_displacement[0:3]
 
             body_state_inertial[0:3] = hrd.body_state_inertial[0:3] # Update the global value of this
 
-            # print("foot_position: ", foot_position[:])
             hrd.foot_position = np.reshape( foot_position[:], (3,6) ) # Multiprocess flag, Body frame
             hrd.foot_off_ground = np.array( foot_off_ground[:] ) # Multiprocess flag, Flags
             hrd.update_foot_position_inertial()
