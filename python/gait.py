@@ -1,5 +1,7 @@
 import numpy as np
 
+from foot_trajectory_planning import init_curved_values
+
 class gait:
 
     # Make this class a singleton
@@ -32,7 +34,35 @@ class gait:
 
         self.stride_radius = 0.035 # meters
 
+        #----------------------------------------------
+        # Variables used for different types of gaites
+        self.gait_type = "curved"
+        self.gait_type = "straight"
+        #------------------------
+        # Variables for "straight" gaites
         self.strafe_angle = 0.0 # Direction of strafe movement, angle around Z body axis, radians
-        self.strafe_angle = -np.pi/3
+        #------------------------
+        # Variables for "curved" gaites
+        self.curve_center = np.array( [-1,0] )  # x,y coordinates in body frame of point around which to curve around
+        self.Rn = np.zeros(6) # Radius from gait curve center point to each foot center
+        self.intersect_point = np.zeros((2,2,6)) # Coordinates of intersection between foot circle and curve radius circle
+        self.intersect_angle = np.zeros((2,6)) # Angle from body X axis to intersection points of foot area and curve radius, radians
 
         self.walking = True
+
+        init_curved_values( self )
+
+    #==============================================================================
+    def init_curved_values( self ):
+
+        for leg in range(6):
+            self.Rn[leg] = np.linalg.norm( self.curve_center[0:2] - self.foot_center[0:2,leg] )
+
+            # Find intersection points
+
+            # Find angles to start and end
+            for cord in range(2):
+                self.intersect_angle[cord,leg] = np.arctan2( self.intersect_point[1,cord,leg] - self.curve_center[1],
+                                                             self.intersect_point[0,cord,leg] - self.curve_center[0] )
+
+            # Check that my intersection angles are in the right order

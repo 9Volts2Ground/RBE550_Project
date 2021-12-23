@@ -2,6 +2,7 @@ import numpy as np
 # Custom classes
 import gait
 
+#==============================================================================
 def foot_trajectory_planning( phase, gait ):
     """Given our phase in the gait, returns desired foot position
 
@@ -61,6 +62,17 @@ def foot_trajectory_planning( phase, gait ):
 
 #==============================================================================
 def move_straight( sub_phase, leg, foot_off_ground, gait ):
+    """Calculates desired foot position when moving in a straight line
+
+    Args:
+        sub_phase (float): Phase of foot up/down portion of stride
+        leg (int): Which leg to calculate position for (1:6)
+        foot_off_ground (int): Flag if foot is on or off the ground at this time
+        gait (class): Class defining gait design parameters
+
+    Returns:
+        foot_position (float, 3): x,y,z coordinates of foot for this time step
+    """
 
     if foot_off_ground:
         # Calculate position of foot at this phase
@@ -75,6 +87,21 @@ def move_straight( sub_phase, leg, foot_off_ground, gait ):
         foot_position = [ np.sin(gait.strafe_angle) * r_phase + gait.foot_center[0,leg],
                                 -np.cos(gait.strafe_angle) * r_phase + gait.foot_center[1,leg],
                                     gait.foot_center[2,leg] ]
+    return foot_position
+
+#==============================================================================
+def move_curved( sub_phase, leg, foot_off_ground, gait ):
+
+    if foot_off_ground:
+        foot_position = [ np.interp( sub_phase, [0.0,1.0], gait.intersect_point[0,:,leg] ), # ToDo: check to make sure you're going the right direction here
+                          np.interp( sub_phase, [0.0,1.0], gait.intersect_point[1,:,leg] ),
+                          (gait.foot_height - gait.foot_center[2,leg]) * np.sin(np.pi*sub_phase) + gait.foot_center[2,leg] ]
+    else:
+        arch_angle = np.interp( sub_phase, [0.0,1.0], gait.intersect_angle[0:2,leg] )
+        foot_position = [ gait.Rn[leg] * np.cos(arch_angle) + gait.curve_center[0],
+                          gait.Rn[leg] * np.sin(arch_angle) + gait.curve_center[1],
+                          gait.foot_center[2,leg] ]
+
     return foot_position
 
 
