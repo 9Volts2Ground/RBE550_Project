@@ -1,7 +1,5 @@
 import numpy as np
 
-from foot_trajectory_planning import init_curved_values
-
 class gait:
 
     # Make this class a singleton
@@ -37,20 +35,20 @@ class gait:
         #----------------------------------------------
         # Variables used for different types of gaites
         self.gait_type = "curved"
-        self.gait_type = "straight"
+        # self.gait_type = "straight"
         #------------------------
         # Variables for "straight" gaites
         self.strafe_angle = 0.0 # Direction of strafe movement, angle around Z body axis, radians
         #------------------------
         # Variables for "curved" gaites
-        self.curve_center = np.array( [-1,0] )  # x,y coordinates in body frame of point around which to curve around
+        self.curve_center = np.array( [0,0] )  # x,y coordinates in body frame of point around which to curve around
         self.Rn = np.zeros(6) # Radius from gait curve center point to each foot center
         self.intersect_point = np.zeros((2,2,6)) # Coordinates of intersection between foot circle and curve radius circle
         self.intersect_angle = np.zeros((2,6)) # Angle from body X axis to intersection points of foot area and curve radius, radians
 
         self.walking = True
 
-        init_curved_values( self )
+        self.init_curved_values()
 
     #==============================================================================
     def init_curved_values( self ):
@@ -59,6 +57,19 @@ class gait:
             self.Rn[leg] = np.linalg.norm( self.curve_center[0:2] - self.foot_center[0:2,leg] )
 
             # Find intersection points
+            Rn2 = self.Rn[leg]**2
+            for cord, add in enumerate( [1, -1] ):
+                self.intersect_point[0,cord,leg] = (self.curve_center[0] + self.foot_center[0,leg])/2 + \
+                                                (self.foot_center[0,leg] - self.curve_center[0]) * \
+                                                (Rn2 - self.stride_radius**2)/(2 * Rn2) + \
+                                                add * 0.5 * (self.curve_center[1] - self.foot_center[1,leg]) / Rn2 * \
+                                                np.sqrt(4 * Rn2 * self.stride_radius**2 - self.stride_radius**4)
+
+                self.intersect_point[1,cord,leg] = (self.curve_center[1] + self.foot_center[1,leg])/2 + \
+                                                (self.foot_center[1,leg] - self.curve_center[1]) * \
+                                                (Rn2 - self.stride_radius**2)/(2 * Rn2) - \
+                                                add * 0.5 * (self.curve_center[0] - self.foot_center[0,leg]) / Rn2 * \
+                                                np.sqrt(4 * Rn2 * self.stride_radius**2 - self.stride_radius**4)
 
             # Find angles to start and end
             for cord in range(2):

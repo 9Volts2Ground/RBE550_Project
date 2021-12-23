@@ -38,7 +38,10 @@ def foot_trajectory_planning( phase, gait ):
             foot_off_ground[leg] = 1
 
             # Calculate position of foot at this phase
-            foot_position[:,leg] = move_straight( up_phase, leg, foot_off_ground[leg], gait )
+            if "straight" in gait.gait_type:
+                foot_position[:,leg] = move_straight( up_phase, leg, foot_off_ground[leg], gait )
+            elif "curved" in gait.gait_type:
+                foot_position[:,leg] = move_curved( up_phase, leg, foot_off_ground[leg], gait )
 
         else:
             # Leg down -----------------------------
@@ -55,7 +58,10 @@ def foot_trajectory_planning( phase, gait ):
             foot_off_ground[leg] = 0
 
             # Calculate position of foot on the ground at this phase
-            foot_position[:,leg] = move_straight( down_phase, leg, foot_off_ground[leg], gait )
+            if "straight" in gait.gait_type:
+                foot_position[:,leg] = move_straight( down_phase, leg, foot_off_ground[leg], gait )
+            elif "curved" in gait.gait_type:
+                foot_position[:,leg] = move_curved( down_phase, leg, foot_off_ground[leg], gait )
 
     return foot_position, foot_off_ground
 
