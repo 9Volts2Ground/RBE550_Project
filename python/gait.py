@@ -51,6 +51,12 @@ class gait:
         self.init_curved_values()
 
     #==============================================================================
+    def set_curve_radius( self, x, y ):
+        self.curve_center = np.array( [x, y] )
+        self.gait_type = "curved"
+        self.init_curved_values()
+
+    #==============================================================================
     def init_curved_values( self ):
 
         for leg in range(6):
@@ -71,9 +77,59 @@ class gait:
                                                 add * 0.5 * (self.curve_center[0] - self.foot_center[0,leg]) / Rn2 * \
                                                 np.sqrt(4 * Rn2 * self.stride_radius**2 - self.stride_radius**4)
 
-            # Find angles to start and end
-            for cord in range(2):
+                # Find angles to start and end
                 self.intersect_angle[cord,leg] = np.arctan2( self.intersect_point[1,cord,leg] - self.curve_center[1],
                                                              self.intersect_point[0,cord,leg] - self.curve_center[0] )
 
-            # Check that my intersection angles are in the right order
+            # if self.velocity > 0:
+            #     if self.curve_center[0] > self.foot_center[0,leg] and self.intersect_angle[0,leg] > self.intersect_angle[1,leg]:
+            #         self.switch_point_order( leg ) # 1
+            #     elif self.curve_center[0] < self.foot_center[0,leg] and self.intersect_angle[0,leg] < self.intersect_angle[1,leg]:
+            #         self.switch_point_order( leg ) # 2
+            #     elif (self.curve_center[0] == self.foot_center[0,leg] or self.curve_center[1] == self.foot_center[1,leg]) and self.intersect_angle[0,leg] < self.intersect_angle[1,leg]:
+            #         self.switch_point_order( leg ) # 5
+            # elif self.velocity < 0:
+            #     if self.curve_center[0] > self.foot_center[0,leg] and self.intersect_angle[0,leg] < self.intersect_angle[1,leg]:
+            #         self.switch_point_order( leg ) # 3
+            #     elif self.curve_center[0] < self.foot_center[0,leg] and self.intersect_angle[0,leg] > self.intersect_angle[1,leg]:
+            #         self.switch_point_order( leg ) # 4
+            #     elif (self.curve_center[0] == self.foot_center[0,leg] or self.curve_center[1] == self.foot_center[1,leg]) and self.intersect_angle[0,leg] > self.intersect_angle[1,leg]:
+            #         self.switch_point_order( leg ) # 6
+
+
+
+            if self.velocity > 0:
+                if self.curve_center[0] > self.foot_center[0,leg] and self.curve_center[1] == self.foot_center[1,leg]:
+                    if self.intersect_angle[0,leg] > self.intersect_angle[1,leg]:
+                        print("Option 1")
+                        self.switch_point_order( leg )
+                elif (self.curve_center[0] == self.foot_center[0,leg] or self.curve_center[1] == self.foot_center[1,leg]) and self.intersect_angle[0,leg] < self.intersect_angle[1,leg]:
+                    print("Option 2")
+                    self.switch_point_order( leg )
+                elif self.intersect_angle[0,leg] < self.intersect_angle[1,leg]:
+                    print("Option 3")
+                    self.switch_point_order( leg )
+            elif self.velocity < 0:
+                if self.curve_center[0] > self.foot_center[0,leg] and self.curve_center[1] == self.foot_center[1,leg] and self.intersect_angle[0,leg] < self.intersect_angle[1,leg]:
+                    self.switch_point_order( leg )
+                elif (self.curve_center[0] == self.foot_center[0,leg] or self.curve_center[1] == self.foot_center[1,leg]) and self.intersect_angle[0,leg] > self.intersect_angle[1,leg]:
+                    self.switch_point_order( leg )
+                elif self.intersect_angle[0,leg] > self.intersect_angle[1,leg]:
+                    self.switch_point_order( leg )
+
+
+    #--------------------------------------------------------------------------
+    def switch_point_order( self, leg ):
+
+        print("Fixing leg:", leg)
+
+        # Switch the order
+        self.intersect_angle[:,leg] = [self.intersect_angle[1,leg], self.intersect_angle[0,leg]]
+
+        temp_intersect = np.zeros((2,2))
+        temp_intersect[:,:] = self.intersect_point[:,:,leg]
+
+        self.intersect_point[0,0,leg] = temp_intersect[0,1]
+        self.intersect_point[1,0,leg] = temp_intersect[1,1]
+        self.intersect_point[0,1,leg] = temp_intersect[0,0]
+        self.intersect_point[1,1,leg] = temp_intersect[1,0]

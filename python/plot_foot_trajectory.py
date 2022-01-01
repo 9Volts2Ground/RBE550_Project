@@ -93,6 +93,7 @@ def plot_foot_trajectory(
     ax = fig1.add_subplot(111, projection = '3d')
     for leg in range(6):
         ax.plot3D( foot_pos[0,leg,1:], foot_pos[1,leg,1:], foot_pos[2,leg,1:], label=str('Leg'+str(leg+1)), marker='.' )
+        ax.plot3D( foot_pos[0,leg,1], foot_pos[1,leg,1], foot_pos[2,leg,1], label=str('Leg'+str(leg+1)), marker='*' )
     ax.set_xlabel('X (m)')
     ax.set_ylabel('Y (m)')
     ax.set_zlabel('Z (m)')

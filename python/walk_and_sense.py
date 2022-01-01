@@ -62,7 +62,7 @@ def walk_and_sense( plot = False, log = True ):
 
     # Define walking start/stop times
     t_start = time.time()
-    t_end = t_start + 6
+    t_end = t_start + 3
 
     #--------------------------------------------------------------------------
     # Define processes
