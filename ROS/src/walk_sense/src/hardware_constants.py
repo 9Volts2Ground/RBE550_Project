@@ -1,4 +1,5 @@
 import numpy as np
+import platform
 
 # Custom libraries
 from rotation import rotrx, rotry, rotrz
@@ -6,6 +7,9 @@ from rotation import rotrx, rotry, rotrz
 class hardware_constants:
 
     def __init__(self):
+
+        # Flag to determine if running on robot hardware
+        self.wanda = self.is_wanda()
 
         # Vector from body center to hip joints, meters
         self.s = np.array([ [ -0.055, 0.076162, 0.048 ],        # Front left
@@ -91,6 +95,13 @@ class hardware_constants:
         #------------------------------------------------------------
         self.leg2led = [6, 0, 5, 1, 4, 2] # Mapping between leg and LED index
         self.seeker_led = 3 # LED array number
+    #==========================================================================
+    def is_wanda( self ):
+        uname = platform.uname()
+        if "ARM" in uname.processor:
+            return True
+        else:
+            return False
 
     #==========================================================================
     def transform_body2shoulder( self, leg ):

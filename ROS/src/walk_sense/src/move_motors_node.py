@@ -9,12 +9,12 @@ import hardware_constants
 from walk_sense.msg import leg_states
 
 #----------------------------------------
-# Set globla flags and class instances
+# Set global flags and class instances
 deg2rad = np.pi/180
 chn = channels.channels()
 hrd = hardware_constants.hardware_constants() # Class with
 
-wanda = "wanda" in os.getcwd()
+wanda = hrd.wanda
 if wanda:
     # Only initialize hardware class if we are running on Wanda hardware
     from Servo import Servo
@@ -44,7 +44,10 @@ def move_all_joints( leg_states ):
 
             # Only try to move the motors and set LED if we are running on real hardware
             if wanda:
-                servo.setServoAngle( hrd.legChannel[joint, leg], angle_command )
+                try:
+                    servo.setServoAngle( hrd.legChannel[joint, leg], angle_command )
+                except:
+                    print("Could not move servo: ", leg, joint)
 
 #==============================================================================
 def move_motors_node():

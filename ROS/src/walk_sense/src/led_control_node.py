@@ -9,11 +9,11 @@ import hardware_constants
 from walk_sense.msg import leg_states
 
 #----------------------------------------
-# Set globla flags and class instances
+# Set global flags and class instances
 chn = channels.channels()
 hrd = hardware_constants.hardware_constants()
 
-wanda = "wanda" in os.getcwd()
+wanda = hrd.wanda
 if wanda:
     # Only initialize LED array if running on hardware
     from Led import Led
