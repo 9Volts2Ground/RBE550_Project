@@ -7,4 +7,5 @@
 *.csv
 ROS/devel**
 ROS/build**
+*.vscode*
 

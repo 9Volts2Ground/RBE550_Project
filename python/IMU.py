@@ -22,9 +22,12 @@ class IMU:
         if self.wanda:
             # Set up PWM channel
             from mpu6050 import mpu6050 # https://github.com/m-rtijn/mpu6050
-            self.sensor = mpu6050( address=0x68, bus=1 )
-            self.sensor.set_accel_range( mpu6050.ACCEL_RANGE_2G ) # Acc can be +/- 2, 4, 8, or 16 g
-            self.sensor.set_gyro_range( mpu6050.GYRO_RANGE_250DEG ) # Gyro can be +/- 250, 500, 1k, or 2k deg/s
+            try:
+                self.sensor = mpu6050( address=0x68, bus=1 )
+                self.sensor.set_accel_range( mpu6050.ACCEL_RANGE_2G ) # Acc can be +/- 2, 4, 8, or 16 g
+                self.sensor.set_gyro_range( mpu6050.GYRO_RANGE_250DEG ) # Gyro can be +/- 250, 500, 1k, or 2k deg/s
+            except:
+                print("Could not connect to IMU")
 
         # Current measurement values
         self.accel_measured = np.zeros(3) # m/s**2
