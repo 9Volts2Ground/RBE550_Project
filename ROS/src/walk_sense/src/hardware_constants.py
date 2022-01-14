@@ -98,7 +98,7 @@ class hardware_constants:
     #==========================================================================
     def is_wanda( self ):
         uname = platform.uname()
-        if "ARM" in uname.processor:
+        if "aarch64" in uname.processor:
             return True
         else:
             return False
