@@ -85,11 +85,14 @@ class IMU:
         self.gyro_measured_prev = copy.deepcopy( self.gyro_measured )
 
         if self.wanda:
-            accel_data = self.sensor.get_accel_data()
-            gyro_data = self.sensor.get_gyro_data()
+            try:
+                accel_data = self.sensor.get_accel_data()
+                gyro_data = self.sensor.get_gyro_data()
 
-            self.accel_measured = np.array( [ accel_data['x'], accel_data['y'], accel_data['z'] ] )
-            self.gyro_measured  = np.array( [ gyro_data['z'],  gyro_data['x'],  gyro_data['y'] ] ) * np.pi/180
+                self.accel_measured = np.array( [ accel_data['x'], accel_data['y'], accel_data['z'] ] )
+                self.gyro_measured  = np.array( [ gyro_data['z'],  gyro_data['x'],  gyro_data['y'] ] ) * np.pi/180
+            except:
+                print("Can't update IMU data")
 
         else:
             # When not testing on hardware, return random values

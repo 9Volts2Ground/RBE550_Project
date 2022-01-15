@@ -39,12 +39,12 @@ if __name__ == "__main__":
     pwd = os.getcwd()
     
     data_dir = "logged_data"
-    hrd_dir = "real_hardware"
+    # hrd_dir = "real_hardware"
     data_file = "seeker_data.csv"
     
     # Read in csv file
     df = pd.read_csv( os.path.join( pwd, data_dir, data_file ) )
-    df = pd.read_csv( os.path.join( pwd, data_dir, hrd_dir, data_file ) )
+    # df = pd.read_csv( os.path.join( pwd, data_dir, hrd_dir, data_file ) )
     
     plot_seeker_sweep_map( df )
     

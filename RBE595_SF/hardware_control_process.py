@@ -200,7 +200,10 @@ def hardware_control_process(
             'BODY_Z':pose[:,2],
         })
 
-        walking_data.to_csv( os.path.join( "logged_data", "foot_trajectory_data.csv"))
+        output_dir = os.path.join( os.path.dirname(__file__), "logged_data" )
+        if not os.path.exists(output_dir):
+            os.makedirs( output_dir )
+        walking_data.to_csv( os.path.join( output_dir, "foot_trajectory_data.csv"))
 
         if plot:
             plot_foot_trajectory(

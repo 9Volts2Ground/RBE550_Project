@@ -104,7 +104,10 @@ def seeker_sweep_map(
             'SKR_INERT_Z':skr_inertial_frame[:,2],
         })
 
-        seeker_data.to_csv( os.path.join( "logged_data", "seeker_data.csv" ) )
+        output_dir = os.path.join( os.path.dirname(__file__), "logged_data" )
+        if not os.path.exists(output_dir):
+            os.makedirs( output_dir )
+        seeker_data.to_csv( os.path.join( output_dir, "seeker_data.csv" ) )
 
         if plot:
             plot_seeker_sweep_map( seeker_data )
