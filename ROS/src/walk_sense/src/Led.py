@@ -1,6 +1,9 @@
-# -*-coding: utf-8 -*-
+#!/usr/bin/env python3
 import time
-from rpi_ws281x import *  # Color, Adafruit_NeoPixel
+import hardware_constants
+hrd = hardware_constants.hardware_constants()
+if hrd.wanda:
+    from rpi_ws281x import *  # Color, Adafruit_NeoPixel
 
 # Note that the '&' operator is considered a 'Bitwise AND'
 # Basically, it's a modulo that includes the mod value as itself (instead of 0)
@@ -34,14 +37,15 @@ class Led:
         # 5 = calls def rainbowCycle
         self.LedMod = '1'  # possible values are 0, 1, 2, 3, 4, 5
         self.colour = [0, 0, 0]
-        # Control the sending order of color data
-        self.ORDER = 'RGB'
-        # Create NeoPixel object with appropriate configuration.
-        self.strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ,
-                                       LED_DMA, LED_INVERT, LED_BRIGHTNESS,
-                                       LED_CHANNEL)
-        # Intialize the library (must be called once before other functions).
-        self.strip.begin()
+        self.ORDER = 'RGB' # Control the sending order of color data
+
+        if hrd.wanda:
+            # Create NeoPixel object with appropriate configuration.
+            self.strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ,
+                                        LED_DMA, LED_INVERT, LED_BRIGHTNESS,
+                                        LED_CHANNEL)
+            # Intialize the library (must be called once before other functions).
+            self.strip.begin()
 
     # =========================================================================
     def LED_TYPR(self, order, R_G_B):
@@ -86,10 +90,12 @@ class Led:
         wait_ms : integer (or float)
             Wait time in microseconds; default 50
         """
-        color = self.LED_TYPR(self.ORDER, color)
+        color = self.LED_TYPR( self.ORDER, color )
         for i in range(self.strip.numPixels()):
-            self.strip.setPixelColor(i, color)
-            self.strip.show()
+            # Only command color if running on hardware
+            if hrd.wanda:
+                self.strip.setPixelColor(i, color)
+                self.strip.show()
             time.sleep(wait_ms/1000.0)
 
     # =========================================================================
@@ -123,13 +129,17 @@ class Led:
             # 0 1 2 3 4 5 6 7
             for q in range(3):
                 # Turns lights on
-                for i in range(0, self.strip.numPixels(), 3):
-                    self.strip.setPixelColor(i+q, color)
-                self.strip.show()
+                if hrd.wanda:
+                    for i in range(0, self.strip.numPixels(), 3):
+                        self.strip.setPixelColor(i+q, color)
+                    self.strip.show()
+
                 time.sleep(wait_ms/1000.0)
+
                 # Turns lights off
-                for i in range(0, self.strip.numPixels(), 3):
-                    self.strip.setPixelColor(i+q, 0)
+                if hrd.wanda:
+                    for i in range(0, self.strip.numPixels(), 3):
+                        self.strip.setPixelColor(i+q, 0)
 
     # =========================================================================
     def wheel(self, pos):
@@ -147,7 +157,9 @@ class Led:
         Unnamed Color object
         """
         if pos < 0 or pos > 255:
-            r = g = b = 0
+            r = 0
+            g = 0
+            b = 0
         # Note that 255/3 = 85 (3 for RGB)
         elif pos < 85:
             r = pos * 3
@@ -201,9 +213,10 @@ class Led:
             Number of times to do the 'animation'; default 1
         """
         for j in range(256*iterations):
-            for i in range(self.strip.numPixels()):
-                 self.strip.setPixelColor(i, self.wheel((i+j) & 255))
-            self.strip.show()
+            if hrd.wanda:
+                for i in range(self.strip.numPixels()):
+                    self.strip.setPixelColor(i, self.wheel((i+j) & 255))
+                self.strip.show()
             time.sleep(wait_ms/1000.0)
 
     # =========================================================================
@@ -220,9 +233,10 @@ class Led:
             Number of times to do the 'animation'; default 5
         """
         for j in range(256*iterations):
-            for i in range(self.strip.numPixels()):
-                self.strip.setPixelColor(i, self.wheel((int(i * 256 / self.strip.numPixels()) + j) & 255))
-            self.strip.show()
+            if hrd.wanda:
+                for i in range(self.strip.numPixels()):
+                    self.strip.setPixelColor(i, self.wheel((int(i * 256 / self.strip.numPixels()) + j) & 255))
+                self.strip.show()
             time.sleep(wait_ms/1000.0)
 
     # =========================================================================
@@ -242,12 +256,14 @@ class Led:
             Wait time in microseconds; default 50.
         """
         for q in range(3):
-            for i in range(0, self.strip.numPixels(), 3):
-                self.strip.setPixelColor(i+q, Color(data[0], data[1], data[2]))
-            self.strip.show()
+            if hrd.wanda:
+                for i in range(0, self.strip.numPixels(), 3):
+                    self.strip.setPixelColor(i+q, Color(data[0], data[1], data[2]))
+                self.strip.show()
             time.sleep(wait_ms/1000.0)
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i+q, 0)
+            if hrd.wanda:
+                for i in range(0, strip.numPixels(), 3):
+                    strip.setPixelColor(i+q, 0)
 
     # =========================================================================
     def ledIndex(self, index, R, G, B):
@@ -266,11 +282,12 @@ class Led:
             Blue color value
         """
         color = self.LED_TYPR(self.ORDER, Color(R,G,B))
-        for i in range(self.strip.numPixels()):  # previously for i in range(8)
-            if index & 0x01 == 1:  # 0 if index is even, 1 if index is odd
-                self.strip.setPixelColor(i, color)
-            index = index >> 1
-        self.strip.show()
+        if hrd.wanda:
+            for i in range(self.strip.numPixels()):  # previously for i in range(8)
+                if index & 0x01 == 1:  # 0 if index is even, 1 if index is odd
+                    self.strip.setPixelColor(i, color)
+                index = index >> 1
+            self.strip.show()
 
     # =========================================================================
     def light(self, data):
@@ -288,6 +305,7 @@ class Led:
         else:
             for i in range(3):
                 self.colour[i] = int(data[i+1])
+
         if self.LedMod == '0':
             self.colorWipe(self.strip, Color(0,0,0))
             self.LedMod = oldMod
@@ -323,8 +341,9 @@ class Led:
         B = int( colors[2] )
         color = self.LED_TYPR(self.ORDER, Color(R,G,B))
 
-        self.strip.setPixelColor(pixel, color)
-        self.strip.show()
+        if hrd.wanda:
+            self.strip.setPixelColor(pixel, color)
+            self.strip.show()
 
 
 # Main program logic follows:

@@ -27,11 +27,11 @@ def set_leg_led( leg_states ):
         else:
             led_color = [0, 10, 0]
 
-        if wanda:
-            try:
-                led.setColor( hrd.leg2led[leg], led_color )
-            except:
-                pass
+        try:
+            led.setColor( hrd.leg2led[leg], led_color )
+            print( led_color )
+        except:
+            pass
 
 #==============================================================================
 def led_control_node():
