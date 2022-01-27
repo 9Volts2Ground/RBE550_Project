@@ -1,7 +1,7 @@
 import numpy as np
 
 # Custom libraries
-import hardware_constants
+from classes import hardware_constants
 from rotation import rotrz
 
 hrd = hardware_constants.hardware_constants()

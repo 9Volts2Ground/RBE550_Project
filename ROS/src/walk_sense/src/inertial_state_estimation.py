@@ -5,8 +5,8 @@ import rospy
 import time
 
 # Custom libraries
-import channels
-import hardware_constants
+from classes import channels
+from classes import hardware_constants
 from walk_sense.msg import leg_states
 
 #----------------------------------------
