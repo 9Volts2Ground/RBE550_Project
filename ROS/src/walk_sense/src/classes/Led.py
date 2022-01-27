@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import time
-import hardware_constants
+from classes import hardware_constants
 hrd = hardware_constants.hardware_constants()
 if hrd.wanda:
     from rpi_ws281x import *  # Color, Adafruit_NeoPixel
@@ -20,7 +20,7 @@ LED_COUNT      = 7       # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
-LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
+LED_BRIGHTNESS = 150     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
@@ -35,7 +35,7 @@ class Led:
         # 3 = calls def theaterChase
         # 4 = calls def rainbow
         # 5 = calls def rainbowCycle
-        self.LedMod = '1'  # possible values are 0, 1, 2, 3, 4, 5
+        self.LedMod = '1'
         self.colour = [0, 0, 0]
         self.ORDER = 'RGB' # Control the sending order of color data
 
@@ -133,7 +133,6 @@ class Led:
                     for i in range(0, self.strip.numPixels(), 3):
                         self.strip.setPixelColor(i+q, color)
                     self.strip.show()
-
                 time.sleep(wait_ms/1000.0)
 
                 # Turns lights off

@@ -5,6 +5,7 @@ import rospy
 
 # Custom libraries
 from classes import channels
+from classes import Led
 from classes import hardware_constants
 from walk_sense.msg import leg_states
 
@@ -12,12 +13,7 @@ from walk_sense.msg import leg_states
 # Set global flags and class instances
 chn = channels.channels()
 hrd = hardware_constants.hardware_constants()
-
-wanda = hrd.wanda
-if wanda:
-    # Only initialize LED array if running on hardware
-    from Led import Led
-    led = Led()
+led = Led.Led()
 
 #==============================================================================
 def set_leg_led( leg_states ):

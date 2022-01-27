@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 import numpy as np
 import platform
 
 # Custom libraries
-from rotation import rotrx, rotry, rotrz
+from functions.rotation import rotrx, rotry, rotrz
 
 class hardware_constants:
 

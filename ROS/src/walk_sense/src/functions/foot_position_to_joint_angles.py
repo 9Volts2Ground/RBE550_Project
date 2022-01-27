@@ -1,13 +1,14 @@
+#!/usr/bin/env python3
 import numpy as np
 
 # Custom libraries
 from classes import hardware_constants
-from rotation import rotrz
+from functions.rotation import rotrz
 
 hrd = hardware_constants.hardware_constants()
 
 #==============================================================================
-def foot_position_to_joint_angles(foot_position):
+def foot_position_to_joint_angles( foot_position ):
     # Grab joint angles from foot_position
     joint_angles = np.zeros( shape=(3,6) )
     for leg in range(6):
@@ -19,12 +20,12 @@ def foot_position_to_joint_angles(foot_position):
         T[0:3,0:3] = Rz.T
         T[0:3,3] = -Rz.T @ hrd.s[:,leg]
 
-        s_array = np.append(foot_position[:,leg], 1.0 )
+        s_array = np.append( foot_position[:,leg], 1.0 )
 
         position_shoulder_frame = T @ s_array.T
 
-        angles = ikine_leg( position_shoulder_frame[0:3] )
-        joint_angles[:,leg] = angles
+        joint_angles[:,leg] = ikine_leg( position_shoulder_frame[0:3] )
+
     return joint_angles
 
 #==============================================================================
