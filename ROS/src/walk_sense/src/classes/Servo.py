@@ -3,7 +3,10 @@ import time
 from classes import hardware_constants
 hrd = hardware_constants.hardware_constants()
 if hrd.wanda:
+    print("Importing servo library")
     import Adafruit_PCA9685
+    # ToDO: look into ROS version of this package:
+    # https://github.com/dheera/ros-pwm-pca9685
 
 #==============================================================================
 def mapNum(value,fromLow,fromHigh,toLow,toHigh):
@@ -41,11 +44,13 @@ class Servo:
         # Right half of hips/knees
         if channel < 16:
             if hrd.wanda:
+                print("pwm_41, channel", channel, " angle ", int( date ) )
                 self.pwm_41.set_pwm( channel, 0, int( date ) )
         # Left half hips/knees
         elif channel >= 16 and channel < 32:
             channel -= 16
             if hrd.wanda:
+                print("pwm_40, channel", channel, " angle ", int( date ) )
                 self.pwm_40.set_pwm( channel, 0, int( date ) )
 
     #----------------------------------------------------------------
