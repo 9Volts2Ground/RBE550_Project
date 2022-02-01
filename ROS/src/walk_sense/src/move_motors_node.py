@@ -11,7 +11,7 @@ from walk_sense.msg import leg_states
 
 #----------------------------------------
 # Set global flags and class instances
-deg2rad = np.pi/180
+rad2deg = 180/np.pi
 chn = channels.channels()
 hrd = hardware_constants.hardware_constants() # Class with
 servo = Servo.Servo()
@@ -27,7 +27,7 @@ def move_all_joints( leg_states ):
         for joint in range(3):
 
             # Convert angle to degrees, offset it by the hardware 0 value
-            angle_command = joint_angles[joint,leg] * deg2rad * hrd.motorOrientation[joint,leg] + hrd.motorCenter[joint,leg]
+            angle_command = joint_angles[joint,leg] * rad2deg * hrd.motorOrientation[joint,leg] + hrd.motorCenter[joint,leg]
 
             # Saturate the motor commands to min/max values
             if angle_command > hrd.motorMax[joint,leg]:
