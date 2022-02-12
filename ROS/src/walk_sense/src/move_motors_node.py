@@ -25,8 +25,7 @@ def move_leg_motors( leg_states ):
     for joint in range(num_joints):
 
         # Convert angle to degrees, offset it by the hardware 0 value
-        angle_command = leg_states.joint_angle.position[joint] * rad2deg * hrd.motorOrientation[joint,leg_states.leg_num]
-        angle_command += hrd.motorCenter[joint,leg_states.leg_num] # Offset calculation based on center of calibrated servo
+        angle_command = leg_states.joint_angle.position[joint] * rad2deg * hrd.motorOrientation[joint,leg_states.leg_num] + hrd.motorCenter[joint,leg_states.leg_num] # Offset calculation based on center of calibrated servo
 
         # Saturate the motor commands to min/max values
         if angle_command > hrd.motorMax[joint,leg_states.leg_num]:
