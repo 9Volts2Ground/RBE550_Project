@@ -12,40 +12,47 @@ from walk_sense.msg import leg_states # Custom ROS message types
 chn = channels.channels()
 gt = gait.gait()
 
+num_legs = 6
+
 #==============================================================================
 def walk_forward():
 
     # Initialize ROS communication
-    pub = rospy.Publisher( chn.leg_states, leg_states, queue_size = 1 )
     rospy.init_node( "walk_forward", anonymous=True )
     rate = rospy.Rate( 50 ) # Hz
-    lg_st_msg = leg_states()
+    lg_st_msg = []
+    pub = []
+    for leg in range( num_legs ):
+        pub.append( rospy.Publisher( chn.leg_states[leg], leg_states, queue_size = 1 ) )
+        lg_st_msg.append( leg_states() )
+        lg_st_msg[leg].leg_num = leg
+        lg_st_msg[leg].joint_ang.position = [0.0, 0.0, 0.0]
 
     print("Entering walking while loop...")
 
     # Initialize walking variables
-    t_start = time.time()
+    t_start = rospy.get_time()
 
     while not rospy.is_shutdown():
-        # Integrate inertial pose as pose = pose + v * dt
-        # Assume just forward velocity in Y direction, body frame
-        # fwd_displacement.value = gt.velocity * (t - previous_time)
-
-        t = time.time()
+        t = rospy.get_time()
 
         # Find what part of the gait phase we are in
         gt.phase = ( (t-t_start) % gt.stride_time ) / gt.stride_time
 
         # Pass that phase in to grab our desired foot positions
         foot_pos, foot_off_ground = foot_trajectory_planning()
-        lg_st_msg.foot_off_ground = foot_off_ground.tolist()
-        lg_st_msg.foot_position = foot_pos.flatten().tolist() # convert 3x6 into 3*6
+        joint_ang = foot_position_to_joint_angles( foot_pos ) # Grab joint angles from foot_position
 
-        # Grab joint angles from foot_position
-        joint_ang = foot_position_to_joint_angles( foot_pos )
-        lg_st_msg.joint_angles = joint_ang.flatten().tolist() # Convert 3x6 to 3*6
-        # Publish the joint angles
-        pub.publish( lg_st_msg )
+
+        # Package leg state info into message
+        for leg in range( num_legs ):
+            lg_st_msg[leg].foot_off_gnd = foot_off_ground[leg]
+            lg_st_msg[leg].foot_pos.x = foot_pos[0,leg]
+            lg_st_msg[leg].foot_pos.y = foot_pos[1,leg]
+            lg_st_msg[leg].foot_pos.z = foot_pos[2,leg]
+            lg_st_msg[leg].joint_ang.position = joint_ang[:,leg]
+            pub[leg].publish( lg_st_msg[leg] ) # Publish the joint angles
+
         rate.sleep()
 
 #==============================================================================
