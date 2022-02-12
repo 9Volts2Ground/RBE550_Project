@@ -26,7 +26,7 @@ def walk_forward():
         pub.append( rospy.Publisher( chn.leg_states[leg], leg_states, queue_size = 1 ) )
         lg_st_msg.append( leg_states() )
         lg_st_msg[leg].leg_num = leg
-        lg_st_msg[leg].joint_ang.position = [0.0, 0.0, 0.0]
+        lg_st_msg[leg].joint_angle.position = [0.0, 0.0, 0.0]
 
     print("Entering walking while loop...")
 
@@ -46,11 +46,11 @@ def walk_forward():
 
         # Package leg state info into message
         for leg in range( num_legs ):
-            lg_st_msg[leg].foot_off_gnd = foot_off_ground[leg]
-            lg_st_msg[leg].foot_pos.x = foot_pos[0,leg]
-            lg_st_msg[leg].foot_pos.y = foot_pos[1,leg]
-            lg_st_msg[leg].foot_pos.z = foot_pos[2,leg]
-            lg_st_msg[leg].joint_ang.position = joint_ang[:,leg]
+            lg_st_msg[leg].foot_off_ground = foot_off_ground[leg]
+            lg_st_msg[leg].foot_position.x = foot_pos[0,leg]
+            lg_st_msg[leg].foot_position.y = foot_pos[1,leg]
+            lg_st_msg[leg].foot_position.z = foot_pos[2,leg]
+            lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
             pub[leg].publish( lg_st_msg[leg] ) # Publish the joint angles
 
         rate.sleep()
