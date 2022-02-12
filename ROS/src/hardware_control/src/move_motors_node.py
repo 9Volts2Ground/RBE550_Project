@@ -7,7 +7,7 @@ import rospy
 from classes import channels
 from classes import hardware_constants
 from classes import Servo
-from walk_sense.msg import leg_states
+from hardware_control.msg import leg_states
 
 #----------------------------------------
 # Set global flags and class instances
