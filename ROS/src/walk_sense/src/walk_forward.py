@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 #=====================
 import numpy as np
+import os
 import rospy
-import time
+import sys
 
 # Custom libraries and class instances
+sys.path.insert( os.path.join( ".", "hardware_control", "src", "classes" ) )
 from classes import channels # List of acceptable channel names
 from classes import gait
 from functions.foot_position_to_joint_angles import *
-from walk_sense.msg import leg_states # Custom ROS message types
+from hardware_control.msg import leg_states # Custom ROS message types
 chn = channels.channels()
 gt = gait.gait()
 
@@ -20,6 +22,8 @@ def walk_forward():
     # Initialize ROS communication
     rospy.init_node( "walk_forward", anonymous=True )
     rate = rospy.Rate( 50 ) # Hz
+
+    # Publish a state of each leg to its own topic
     lg_st_msg = []
     pub = []
     for leg in range( num_legs ):
@@ -43,7 +47,6 @@ def walk_forward():
         foot_pos, foot_off_ground = foot_trajectory_planning()
         joint_ang = foot_position_to_joint_angles( foot_pos ) # Grab joint angles from foot_position
 
-
         # Package leg state info into message
         for leg in range( num_legs ):
             lg_st_msg[leg].foot_off_ground = foot_off_ground[leg]
@@ -60,33 +63,30 @@ def foot_trajectory_planning():
 
     # Initialize foot position array
     foot_position = np.zeros( shape=(3,6) )
-    foot_off_ground = np.zeros( 6, dtype=int )
+    foot_off_ground = np.zeros( 6, dtype=bool )
 
     for leg in range( 6 ):
 
         # Find at what point in the period the foot contacts the ground again
         phase_end = gt.phase_offset[leg] + 1/3
         if phase_end > 1:
-            # Leg 4 leg up wraps around to begin of period
-            phase_end = phase_end - 1
+            phase_end = phase_end - 1 # Leg 4 leg up wraps around to begin of period
 
         # Determine if this leg is up or down
         if  (gt.phase >= gt.phase_offset[leg] and gt.phase < phase_end) or (leg == 4-1 and (gt.phase >= gt.phase_offset[leg] or gt.phase < phase_end)):
             # Leg up ------------------------------
-
             if leg == 4-1 and gt.phase < 1/6:
                 up_phase = gt.phase * 3 + 0.5
             else:
                 up_phase = (gt.phase - gt.phase_offset[leg]) / (1 - gt.beta)
 
-            foot_off_ground[leg] = 1
+            foot_off_ground[leg] = True
             foot_position[:,leg] = [gt.ground_x[leg],
                                     ( gt.ground_y_max[leg] - gt.ground_y_min[leg] ) * up_phase + gt.ground_y_min[leg],
                                     gt.foot_height * np.sin( np.pi * up_phase ) - gt.body_height ]
 
         else:
             # Leg down -----------------------------
-
             if leg == 4-1:
                 down_phase = (gt.phase - 1/6) / gt.beta
             elif gt.phase >= gt.phase_offset[leg] + 1.0/3.0:
@@ -96,7 +96,7 @@ def foot_trajectory_planning():
                 # Before foot lift off
                 down_phase = (gt.phase + 1 - (gt.phase_offset[leg] + 1/3)) / gt.beta
 
-            foot_off_ground[leg] = 0
+            foot_off_ground[leg] = False
             foot_position[:,leg] = [gt.ground_x[leg],
                                     gt.ground_y_max[leg] - (gt.ground_y_max[leg] - gt.ground_y_min[leg] ) * down_phase,
                                     -gt.body_height]
