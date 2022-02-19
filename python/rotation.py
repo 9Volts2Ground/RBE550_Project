@@ -53,6 +53,20 @@ def rotrz( theta ):
     return R
 
 #==============================================================================
+def skew( p ):
+    """Calculates 3x3 skew symmetric matrix from R^3 array p
+    Args:
+        p (float[3]): Array of len 3 to create matrix from
+    Returns:
+        P (float[3,3]): 3x3 skew symmetric matrix
+    """
+
+    P = np.array( [ [    0, -p[2],  p[1]],
+                    [ p[2],     0, -p[0]],
+                    [-p[1],  p[0],     0] ] )
+    return P
+
+#==============================================================================
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
