@@ -4,43 +4,48 @@ import numpy as np
 import rospy
 
 # Custom libraries and class instances
+from classes.gait import gait
+from classes.walk_topics import walk_topics
+from functions.foot_position_to_joint_angles import *
+from walk_sense.msg import walk_twist
+
 from hardware_control.hw_topics import hw_topics # List of acceptable channel names
 from hardware_control import hardware_constants
-from classes import gait
-from functions.foot_position_to_joint_angles import *
 from hardware_control.msg import leg_states # Custom ROS message types
 
 # Initialize classes
-top = hw_topics()
-gt = gait.gait()
+hw_top = hw_topics()
+w_top = walk_topics()
+gt = gait()
 hrd = hardware_constants.hardware_constants()
 
 #==============================================================================
-def gait_update_node():
+class gait_update_node():
+    def __init__(self):
+        # Initialize ROS communication
+        rospy.init_node( "gait_update_node", anonymous=True )
 
-    # Initialize ROS communication
-    rospy.init_node( "gait_update_node", anonymous=True )
-    rate = rospy.Rate( 50 ) # Hz
+        rospy.Subscriber( w_top.walk_twist, walk_twist, self.update_gait )
 
-    # Publish a state of each leg to its own topic
-    lg_st_msg = []
-    pub = []
-    for leg in range( hrd.num_legs ):
-        pub.append( rospy.Publisher( top.leg_states[leg], leg_states, queue_size = 1 ) )
-        lg_st_msg.append( leg_states() )
-        lg_st_msg[leg].leg_num = leg
-        lg_st_msg[leg].joint_angle.position = [0.0, 0.0, 0.0]
+        # Publish a state of each leg to its own topic
+        self.lg_st_msg = []
+        self.pub = []
+        for leg in range( hrd.num_legs ):
+            self.pub.append( rospy.Publisher( hw_top.leg_states[leg], leg_states, queue_size = 1 ) )
+            self.lg_st_msg.append( leg_states() )
+            self.lg_st_msg[leg].leg_num = leg
+            self.lg_st_msg[leg].joint_angle.position = [0.0, 0.0, 0.0]
 
-    print("Entering walking while loop...")
+        self.t_start = rospy.get_time()
 
-    # Initialize walking variables
-    t_start = rospy.get_time()
 
-    while not rospy.is_shutdown():
+    #-----------------------------------
+    def update_gait( self, walk_twist ):
+
         t = rospy.get_time()
 
         # Find what part of the gait phase we are in
-        gt.phase = ( (t-t_start) % gt.stride_time ) / gt.stride_time
+        gt.phase = ( (t-self.t_start) % gt.stride_time ) / gt.stride_time
 
         # Pass that phase in to grab our desired foot positions
         foot_pos, foot_off_ground = foot_trajectory_planning()
@@ -48,14 +53,13 @@ def gait_update_node():
 
         # Package leg state info into message
         for leg in range( hrd.num_legs ):
-            lg_st_msg[leg].foot_off_ground = foot_off_ground[leg]
-            lg_st_msg[leg].foot_position.x = foot_pos[0,leg]
-            lg_st_msg[leg].foot_position.y = foot_pos[1,leg]
-            lg_st_msg[leg].foot_position.z = foot_pos[2,leg]
-            lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
-            pub[leg].publish( lg_st_msg[leg] ) # Publish the joint angles
+            self.lg_st_msg[leg].foot_off_ground = foot_off_ground[leg]
+            self.lg_st_msg[leg].foot_position.x = foot_pos[0,leg]
+            self.lg_st_msg[leg].foot_position.y = foot_pos[1,leg]
+            self.lg_st_msg[leg].foot_position.z = foot_pos[2,leg]
+            self.lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
+            self.pub[leg].publish( self.lg_st_msg[leg] ) # Publish the joint angles
 
-        rate.sleep()
 
 #==============================================================================
 def foot_trajectory_planning():
@@ -105,7 +109,8 @@ def foot_trajectory_planning():
 #==============================================================================
 if __name__ == "__main__":
     try:
-        gait_update_node()
+        gu = gait_update_node()
+        rospy.spin()
     except rospy.ROSInterruptException:
         pass
 

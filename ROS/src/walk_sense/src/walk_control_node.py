@@ -23,6 +23,7 @@ def walk_control_node():
     twist.walk_direction.angular.y = 0
     twist.walk_direction.angular.z = 0
     
+    print("Entering walking while loop...")
     
     while not rospy.is_shutdown():
         
