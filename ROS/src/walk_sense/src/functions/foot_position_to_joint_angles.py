@@ -2,8 +2,8 @@
 import numpy as np
 
 # Custom libraries
-from classes import hardware_constants
-from functions.rotation import rotrz
+from hardware_control import hardware_constants
+from hardware_control import rotation
 
 hrd = hardware_constants.hardware_constants()
 
@@ -13,7 +13,7 @@ def foot_position_to_joint_angles( foot_position ):
     joint_angles = np.zeros( shape=(3,6) )
     for leg in range(6):
 
-        Rz = rotrz( hrd.alpha_offset[leg])
+        Rz = rotation.rotrz( hrd.alpha_offset[leg])
 
         # Grab transformation from Wanda body frame to shoulder[leg] frame
         T = np.identity( 4 )

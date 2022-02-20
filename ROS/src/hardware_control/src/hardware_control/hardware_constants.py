@@ -3,7 +3,7 @@ import numpy as np
 import platform
 
 # Custom libraries
-from functions.rotation import rotrx, rotry, rotrz
+from hardware_control import rotation
 
 class hardware_constants:
 
@@ -11,6 +11,9 @@ class hardware_constants:
 
         # Flag to determine if running on robot hardware
         self.wanda = self.is_wanda()
+
+        self.num_legs = 6
+        self.num_joints = 3 # Number of joints in each leg
 
         # Vector from body center to hip joints, meters
         self.s = np.array([ [ -0.055, 0.076162, 0.048 ],        # Front left
@@ -125,9 +128,9 @@ class hardware_constants:
         From body frame: rotate yaw, pitch roll
         """
 
-        R_roll = rotry( body_state_inertial[11] )
-        R_pitch = rotrx( body_state_inertial[10] )
-        R_yaw = rotrz( body_state_inertial[9])
+        R_roll = rotation.rotry( body_state_inertial[11] )
+        R_pitch = rotation.rotrx( body_state_inertial[10] )
+        R_yaw = rotation.rotrz( body_state_inertial[9])
 
         return R_roll @ R_pitch @ R_yaw # Body orientation matrix in inertial frame
 

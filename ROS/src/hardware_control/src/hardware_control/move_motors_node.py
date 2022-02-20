@@ -1,28 +1,25 @@
 #!/usr/bin/env python3
 import numpy as np
-import os
 import rospy
 
 # Custom libraries
-from classes import topics
-from classes import hardware_constants
-from classes import Servo
+from topics import topics
+from hardware_constants import hardware_constants
+from Servo import Servo
 from hardware_control.msg import leg_states
 
 #----------------------------------------
 # Set global flags and class instances
-top = topics.topics()
-hrd = hardware_constants.hardware_constants() # Class with
-servo = Servo.Servo()
+top = topics()
+hrd = hardware_constants()
+servo = Servo()
 
 rad2deg = 180/np.pi
-num_legs = 6
-num_joints = 3 # 3 DoF legs
 
 #==============================================================================
 def move_leg_motors( leg_states ):
 
-    for joint in range(num_joints):
+    for joint in range(hrd.num_joints):
 
         # Convert angle to degrees, offset it by the hardware 0 value
         angle_command = leg_states.joint_angle.position[joint] * rad2deg * hrd.motorOrientation[joint,leg_states.leg_num] + hrd.motorCenter[joint,leg_states.leg_num] # Offset calculation based on center of calibrated servo
@@ -47,7 +44,7 @@ def move_motors_node():
     rospy.init_node( "move_motors_node", anonymous=True )
 
     # Kick off unique subscriber for each leg
-    for leg in range( num_legs ):
+    for leg in range( hrd.num_legs ):
         rospy.Subscriber( top.leg_states[leg], leg_states, move_leg_motors )
 
     rospy.spin()

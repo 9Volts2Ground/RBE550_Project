@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import time
-from classes import hardware_constants
-hrd = hardware_constants.hardware_constants()
+from hardware_constants import hardware_constants
+hrd = hardware_constants()
 if hrd.wanda:
     print("Importing servo library")
     import Adafruit_PCA9685
-    # ToDO: look into ROS version of this package:
-    # https://github.com/dheera/ros-pwm-pca9685
 
 #==============================================================================
 def mapNum(value,fromLow,fromHigh,toLow,toHigh):
@@ -34,23 +32,23 @@ class Servo:
             self.pwm_41.set_pwm_freq(50)
             time.sleep(0.01)
         else:
-            time.sleep(0.02)
+            time.sleep(0.02) # Mimic the time delay to start up
 
     #----------------------------------------------------------------
     # Convert the input angle to the value of pca9685
     def setServoAngle(self,channel, angle):
 
-        date = mapNum( mapNum( angle, 0, 180, 500, 2500 ), 0, 20000, 0, 4095 ) # 0-180 map to 500-2500us ,then map to duty 0-4095
+        date = mapNum( mapNum( angle, 0, 180, 500, 2500 ), 0, 20000, 0, 4095 ) # 0-180 map to 500-2500us, then map to duty 0-4095
         # Right half of hips/knees
         if channel < 16:
             if hrd.wanda:
-                print("pwm_41, channel", channel, " angle ", int( date ) )
+                # print("pwm_41, channel", channel, " angle ", int( date ) )
                 self.pwm_41.set_pwm( channel, 0, int( date ) )
         # Left half hips/knees
         elif channel >= 16 and channel < 32:
             channel -= 16
             if hrd.wanda:
-                print("pwm_40, channel", channel, " angle ", int( date ) )
+                # print("pwm_40, channel", channel, " angle ", int( date ) )
                 self.pwm_40.set_pwm( channel, 0, int( date ) )
 
     #----------------------------------------------------------------

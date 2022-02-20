@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 #=====================
 import numpy as np
-import os
 import rospy
-import sys
 
 # Custom libraries and class instances
-sys.path.insert( os.path.join( ".", "hardware_control", "src", "classes" ) )
-from classes import topics # List of acceptable channel names
+from hardware_control.topics import topics # List of acceptable channel names
+from hardware_control import hardware_constants
 from classes import gait
 from functions.foot_position_to_joint_angles import *
 from hardware_control.msg import leg_states # Custom ROS message types
-top = topics.topics()
-gt = gait.gait()
 
-num_legs = 6
+# Initialize classes
+top = topics()
+gt = gait.gait()
+hrd = hardware_constants.hardware_constants()
 
 #==============================================================================
 def walk_forward():
@@ -26,7 +25,7 @@ def walk_forward():
     # Publish a state of each leg to its own topic
     lg_st_msg = []
     pub = []
-    for leg in range( num_legs ):
+    for leg in range( hrd.num_legs ):
         pub.append( rospy.Publisher( top.leg_states[leg], leg_states, queue_size = 1 ) )
         lg_st_msg.append( leg_states() )
         lg_st_msg[leg].leg_num = leg
@@ -48,7 +47,7 @@ def walk_forward():
         joint_ang = foot_position_to_joint_angles( foot_pos ) # Grab joint angles from foot_position
 
         # Package leg state info into message
-        for leg in range( num_legs ):
+        for leg in range( hrd.num_legs ):
             lg_st_msg[leg].foot_off_ground = foot_off_ground[leg]
             lg_st_msg[leg].foot_position.x = foot_pos[0,leg]
             lg_st_msg[leg].foot_position.y = foot_pos[1,leg]
