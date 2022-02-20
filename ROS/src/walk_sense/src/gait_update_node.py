@@ -16,10 +16,10 @@ gt = gait.gait()
 hrd = hardware_constants.hardware_constants()
 
 #==============================================================================
-def walk_forward():
+def gait_update_node():
 
     # Initialize ROS communication
-    rospy.init_node( "walk_forward", anonymous=True )
+    rospy.init_node( "gait_update_node", anonymous=True )
     rate = rospy.Rate( 50 ) # Hz
 
     # Publish a state of each leg to its own topic
@@ -105,7 +105,7 @@ def foot_trajectory_planning():
 #==============================================================================
 if __name__ == "__main__":
     try:
-        walk_forward()
+        gait_update_node()
     except rospy.ROSInterruptException:
         pass
 
