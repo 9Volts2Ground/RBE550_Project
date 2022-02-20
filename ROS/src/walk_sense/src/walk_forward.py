@@ -4,14 +4,14 @@ import numpy as np
 import rospy
 
 # Custom libraries and class instances
-from hardware_control.topics import topics # List of acceptable channel names
+from hardware_control.hw_topics import hw_topics # List of acceptable channel names
 from hardware_control import hardware_constants
 from classes import gait
 from functions.foot_position_to_joint_angles import *
 from hardware_control.msg import leg_states # Custom ROS message types
 
 # Initialize classes
-top = topics()
+top = hw_topics()
 gt = gait.gait()
 hrd = hardware_constants.hardware_constants()
 

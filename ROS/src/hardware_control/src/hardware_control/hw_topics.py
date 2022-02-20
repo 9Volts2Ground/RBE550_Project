@@ -2,7 +2,7 @@
 
 num_legs = 6
 
-class topics:
+class hw_topics:
     def __init__(self):
 
         self.leg_states = []

@@ -3,14 +3,14 @@ import numpy as np
 import rospy
 
 # Custom libraries
-from topics import topics
+from hw_topics import hw_topics
 from hardware_constants import hardware_constants
 from Servo import Servo
 from hardware_control.msg import leg_states
 
 #----------------------------------------
 # Set global flags and class instances
-top = topics()
+top = hw_topics()
 hrd = hardware_constants()
 servo = Servo()
 
