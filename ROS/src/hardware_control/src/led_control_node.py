@@ -4,14 +4,14 @@ import os
 import rospy
 
 # Custom libraries
-from classes import channels
+from classes import topics
 from classes import Led
 from classes import hardware_constants
 from walk_sense.msg import leg_states
 
 #----------------------------------------
 # Set global flags and class instances
-chn = channels.channels()
+top = topics.topics()
 hrd = hardware_constants.hardware_constants()
 led = Led.Led()
 
@@ -32,7 +32,7 @@ def set_leg_led( leg_states ):
 #==============================================================================
 def led_control_node():
     rospy.init_node( "led_control_node", anonymous=True )
-    rospy.Subscriber( chn.leg_states, leg_states, set_leg_led )
+    rospy.Subscriber( top.leg_states, leg_states, set_leg_led )
     rospy.spin()
 
 #==============================================================================

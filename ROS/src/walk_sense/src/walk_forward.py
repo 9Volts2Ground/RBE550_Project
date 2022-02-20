@@ -7,11 +7,11 @@ import sys
 
 # Custom libraries and class instances
 sys.path.insert( os.path.join( ".", "hardware_control", "src", "classes" ) )
-from classes import channels # List of acceptable channel names
+from classes import topics # List of acceptable channel names
 from classes import gait
 from functions.foot_position_to_joint_angles import *
 from hardware_control.msg import leg_states # Custom ROS message types
-chn = channels.channels()
+top = topics.topics()
 gt = gait.gait()
 
 num_legs = 6
@@ -27,7 +27,7 @@ def walk_forward():
     lg_st_msg = []
     pub = []
     for leg in range( num_legs ):
-        pub.append( rospy.Publisher( chn.leg_states[leg], leg_states, queue_size = 1 ) )
+        pub.append( rospy.Publisher( top.leg_states[leg], leg_states, queue_size = 1 ) )
         lg_st_msg.append( leg_states() )
         lg_st_msg[leg].leg_num = leg
         lg_st_msg[leg].joint_angle.position = [0.0, 0.0, 0.0]

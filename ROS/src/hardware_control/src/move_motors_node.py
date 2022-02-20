@@ -4,14 +4,14 @@ import os
 import rospy
 
 # Custom libraries
-from classes import channels
+from classes import topics
 from classes import hardware_constants
 from classes import Servo
 from hardware_control.msg import leg_states
 
 #----------------------------------------
 # Set global flags and class instances
-chn = channels.channels()
+top = topics.topics()
 hrd = hardware_constants.hardware_constants() # Class with
 servo = Servo.Servo()
 
@@ -48,7 +48,7 @@ def move_motors_node():
 
     # Kick off unique subscriber for each leg
     for leg in range( num_legs ):
-        rospy.Subscriber( chn.leg_states[leg], leg_states, move_leg_motors )
+        rospy.Subscriber( top.leg_states[leg], leg_states, move_leg_motors )
 
     rospy.spin()
 
