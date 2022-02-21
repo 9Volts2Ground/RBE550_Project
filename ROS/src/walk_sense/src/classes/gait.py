@@ -11,23 +11,33 @@ class gait:
 
     def __init__(self):
         self.beta = 4.0/6.0 # Ratio of how long each foot is on the ground
-        self.velocity = 0.020  # How fast the body moves, m/s (50mm/s ~= 2 in/s)
-        self.stride_length = 0.080    # How far each stride should move, m
-        self.stride_time = self.stride_length / ( self.velocity * self.beta ) # How long each strid lasts
 
-        self.phase = 0
+        self.phase = 0 # Initialize to 0, but increment as it walks
 
-        self.phase_offset = np.array( [4.0/6.0, 1.0/6.0, 2.0/6.0, 5.0/6.0, 0.0, 3.0/6.0] )    # Which point in the period each foot lifts off
+        # Which point in the period each foot lifts off
+        self.phase_offset = np.array( [4.0/6.0, 1.0/6.0, 2.0/6.0, 5.0/6.0, 0.0, 3.0/6.0] )
 
-        self.foot_height = 0.04   # How high each foot will lift off the ground, m
-        self.body_height = 0.05   # How high the body will be off the ground, m
+        # Redesigned for strafe
+        self.body_height = 0.03   # How high the body will be off the ground, m
+        self.foot_center = np.array( [ [-0.16, 0.21, -self.body_height],
+                                       [0.16, 0.21, -self.body_height],
+                                       [-0.27, 0.0, -self.body_height],
+                                       [0.27, 0.0, -self.body_height],
+                                       [-0.16, -0.21, -self.body_height],
+                                       [0.16, -0.21, -self.body_height] ] ).T
+        self.foot_height = -0.01 # Z position of foot at peak stride in body frame, meters
 
-        self.ground_x = np.array( [-0.15, 0.15, -0.2, 0.2, -0.15, 0.15] )   # How far away each leg is from the body center
-
-        self.ground_y_max = np.array( [ 0.12 + self.stride_length, 0.12 + self.stride_length,
-                                        self.stride_length/2, self.stride_length/2,
-                                        -0.12, -0.12] )  # How far forward each foot will move, body frame, m
-
-        self.ground_y_min = self.ground_y_max - self.stride_length
+        self.stride_length = 0.07 # meters
 
         self.walking = True
+
+    #-------------------------------------------------
+    def update_stride_time( self, twist ):
+        self.velocity = np.linalg.norm( [twist.linear.x, twist.linear.y, twist.linear.z] )
+
+        # Need to better handle this edge case handling
+        if self.velocity == 0.0:
+            self.stride_time = 0.0
+        else:
+            self.stride_time = self.stride_length / ( self.velocity * self.beta )
+
