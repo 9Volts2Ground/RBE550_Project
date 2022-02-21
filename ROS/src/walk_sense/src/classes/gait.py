@@ -27,7 +27,7 @@ class gait:
                                        [0.16, -0.21, -self.body_height] ] ).T
         self.foot_height = -0.01 # Z position of foot at peak stride in body frame, meters
 
-        self.stride_length = 0.07 # meters
+        self.stride_length = 0.06 # meters
 
         self.walking = True
 

@@ -23,20 +23,11 @@ hrd = hardware_constants.hardware_constants()
 #==============================================================================
 class gait_update_node():
     def __init__(self):
+
         # Initialize ROS communication
         rospy.init_node( "gait_update_node", anonymous=True )
 
-        rospy.Subscriber( w_top.walk_twist, walk_twist, self.update_gait )
-
-        # Publish a state of each leg to its own topic
-        self.lg_st_msg = []
-        self.pub = []
-        for leg in range( hrd.num_legs ):
-            self.pub.append( rospy.Publisher( hw_top.leg_states[leg], leg_states, queue_size = 1 ) )
-            self.lg_st_msg.append( leg_states() )
-            self.lg_st_msg[leg].leg_num = leg
-            self.lg_st_msg[leg].joint_angle.position = [0.0, 0.0, 0.0]
-
+        # Initialize local vars
         self.t_start = rospy.get_time()
         self.t_previous = self.t_start
         self.dt = 0
@@ -47,6 +38,24 @@ class gait_update_node():
         self.last_dropping_phase = [1,1,1,1,1,1]
         self.up_phase_foot_limit = np.zeros((3,6))
 
+        # Initialze foot position
+        joint_ang = foot_position_to_joint_angles( gt.foot_center )
+
+        # Publish a state of each leg to its own topic
+        self.lg_st_msg = []
+        self.pub = []
+        for leg in range( hrd.num_legs ):
+            self.pub.append( rospy.Publisher( hw_top.leg_states[leg], leg_states, queue_size = 1 ) )
+            self.lg_st_msg.append( leg_states() )
+            self.lg_st_msg[leg].leg_num = leg
+            # Initialize foot states
+            self.lg_st_msg[leg].foot_position.x = gt.foot_center[0,leg]
+            self.lg_st_msg[leg].foot_position.y = gt.foot_center[1,leg]
+            self.lg_st_msg[leg].foot_position.z = gt.foot_center[2,leg]
+            self.lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
+
+        # Subscribe to walk control after initializing all your stuff
+        rospy.Subscriber( w_top.walk_twist, walk_twist, self.update_gait )
 
     #-----------------------------------
     def update_gait( self, walk_twist ):
@@ -99,9 +108,6 @@ class gait_update_node():
                     up_phase = (gt.phase - gt.phase_offset[leg]) / (1 - gt.beta)
 
                 foot_off_ground[leg] = True
-                # foot_position[:,leg] = [gt.foot_center[0,leg],
-                #                         gt.stride_length * up_phase + gt.foot_center[1,leg] - gt.stride_length/2,
-                #                         ( gt.foot_height - gt.foot_center[2,leg]) * np.sin( np.pi * up_phase ) + gt.foot_center[2,leg] ]
                 foot_position[:,leg] = self.integrate_foot_up_pos( leg, twist, up_phase )
 
             else:
