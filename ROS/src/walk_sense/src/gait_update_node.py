@@ -35,8 +35,7 @@ class gait_update_node():
 
         # Stored vars for up-phase
         self.last_lifting_phase  = [1,1,1,1,1,1]
-        self.last_dropping_phase = [1,1,1,1,1,1]
-        self.up_phase_foot_limit = np.zeros( (hrd.num_joints,hrd.num_legs) )
+        self.up_phase_foot_start = np.zeros( (hrd.num_joints,hrd.num_legs) )
         self.distance_foot_traveled = np.zeros( hrd.num_legs )
 
         # Initialze foot position
@@ -154,15 +153,14 @@ class gait_update_node():
 
         if up_phase < self.last_lifting_phase[leg]:
             # This is the start of the up-phase, grab our starting foot position
-            self.up_phase_foot_limit[:,leg] = np.array( [ self.lg_st_msg[leg].foot_position.x,
+            self.up_phase_foot_start[:,leg] = np.array( [ self.lg_st_msg[leg].foot_position.x,
                                                           self.lg_st_msg[leg].foot_position.y,
                                                           self.lg_st_msg[leg].foot_position.z] )
-
         self.last_lifting_phase[leg] = up_phase
 
-        new_foot_pos = [ np.interp( up_phase, [0,1.0], [self.up_phase_foot_limit[0,leg], gt.foot_center[0,leg]] ),
-                         np.interp( up_phase, [0,1.0], [self.up_phase_foot_limit[1,leg], gt.foot_center[1,leg]] ),
-                         -gt.foot_height * np.sin( np.pi * up_phase ) - gt.body_height ]
+        new_foot_pos = [ np.interp( up_phase, [0,1.0], [self.up_phase_foot_start[0,leg], gt.foot_center[0,leg]] ),
+                         np.interp( up_phase, [0,1.0], [self.up_phase_foot_start[1,leg], gt.foot_center[1,leg]] ),
+                         -gt.body_height + ( gt.body_height + gt.foot_height ) * np.sin( np.pi * up_phase ) ]
 
         return new_foot_pos
 
