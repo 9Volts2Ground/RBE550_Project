@@ -28,6 +28,7 @@ class gait:
         self.foot_height = -0.01 # Z position of foot at peak stride in body frame, meters
 
         self.stride_length = 0.06 # meters
+        self.max_stride_length = 0.035 # meters
 
         self.walking = True
 
