@@ -18,12 +18,12 @@ def walk_control_node():
 
     # Initialize twist
     twist = walk_twist()
-    twist.walk_direction.linear.x = 0.005
-    twist.walk_direction.linear.y = -0.002
+    twist.walk_direction.linear.x = 0.000
+    twist.walk_direction.linear.y = 0.01
     twist.walk_direction.linear.z = 0
     twist.walk_direction.angular.x = 0
     twist.walk_direction.angular.y = 0
-    twist.walk_direction.angular.z = np.pi/50
+    twist.walk_direction.angular.z = 0 #np.pi/50
 
     print("Entering walking while loop...")
 

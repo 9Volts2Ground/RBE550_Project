@@ -18,13 +18,13 @@ class gait:
         self.phase_offset = np.array( [4.0/6.0, 1.0/6.0, 2.0/6.0, 5.0/6.0, 0.0, 3.0/6.0] )
 
         # Redesigned for strafe
-        self.body_height = 0.03   # How high the body will be relative to the ground, m
-        self.foot_center = np.array( [ [-0.16, 0.21, -self.body_height],
-                                       [0.16, 0.21, -self.body_height],
-                                       [-0.27, 0.0, -self.body_height],
-                                       [0.27, 0.0, -self.body_height],
-                                       [-0.16, -0.21, -self.body_height],
-                                       [0.16, -0.21, -self.body_height] ] ).T
-        self.foot_height = -0.01 # Z position of foot at peak stride in body frame, meters
+        self.body_height = 0.05   # How high the body will be relative to the ground, m
+        self.foot_center = np.array( [ [-0.12, 0.20, -self.body_height],
+                                       [0.12, 0.20, -self.body_height],
+                                       [-0.21, 0.0, -self.body_height],
+                                       [0.21, 0.0, -self.body_height],
+                                       [-0.12, -0.20, -self.body_height],
+                                       [0.12, -0.20, -self.body_height] ] ).T
+        self.foot_height = -0.025 # Z position of foot at peak stride in body frame, meters
 
         self.max_stride_length = 0.04 # meters
