@@ -23,7 +23,7 @@ def walk_control_node():
     twist.walk_direction.linear.z = 0
     twist.walk_direction.angular.x = 0
     twist.walk_direction.angular.y = 0
-    twist.walk_direction.angular.z = np.pi/30
+    twist.walk_direction.angular.z = np.pi/10
 
     print("Entering walking while loop...")
 
