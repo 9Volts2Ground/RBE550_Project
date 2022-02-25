@@ -27,4 +27,4 @@ class gait:
                                        [0.14, -0.20, -self.body_height] ] ).T
         self.foot_height = -0.025 # Z position of foot at peak stride in body frame, meters
 
-        self.max_stride_length = 0.04 # meters
+        self.max_stride_length = 0.06 # meters
