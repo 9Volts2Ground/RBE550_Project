@@ -18,8 +18,8 @@ def walk_control_node():
 
     # Initialize twist
     twist = walk_twist()
-    twist.walk_direction.linear.x = 0.04
-    twist.walk_direction.linear.y = 0.0
+    twist.walk_direction.linear.x = 0.0
+    twist.walk_direction.linear.y = 0.01
     twist.walk_direction.linear.z = 0
     twist.walk_direction.angular.x = 0
     twist.walk_direction.angular.y = 0
@@ -29,6 +29,7 @@ def walk_control_node():
 
     while not rospy.is_shutdown():
 
+        twist.header.stamp = rospy.Time.now()
         pub.publish( twist )
 
         rate.sleep()

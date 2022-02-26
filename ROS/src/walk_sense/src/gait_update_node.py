@@ -77,6 +77,7 @@ class gait_update_node():
 
         # Package leg state info into message
         for leg in range( hrd.num_legs ):
+            self.lg_st_msg[leg].header.stamp = rospy.Time.now()
             self.lg_st_msg[leg].foot_off_ground = foot_off_ground[leg]
             self.lg_st_msg[leg].foot_position.x = foot_pos[0,leg]
             self.lg_st_msg[leg].foot_position.y = foot_pos[1,leg]
@@ -132,7 +133,7 @@ class gait_update_node():
         # Current foot position
         p = np.array( [ self.lg_st_msg[leg].foot_position.x,
                         self.lg_st_msg[leg].foot_position.y,
-                        self.lg_st_msg[leg].foot_position.z] )
+                        -gt.body_height] ) # Force foot to be at set stride height. May update later when foot sensors are implemented
 
         # Transformation from body twist to foot twist
         T_body2foot = np.eye( 6 )
