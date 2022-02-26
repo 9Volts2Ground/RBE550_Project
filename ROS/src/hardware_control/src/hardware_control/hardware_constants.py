@@ -37,7 +37,7 @@ class hardware_constants:
                                       [  9,  8, 31 ] ] ).T  # Back right
 
         # Motor angle centers, degrees
-        self.motorCenter = np.array( [  [ 115, 100, 160 ],
+        self.motorCenter = np.array( [  [ 115, 110, 160 ],
                                         [ 120, 105, 20 ],
                                         [ 120, 110, 155 ],
                                         [ 120, 110, 26 ],
