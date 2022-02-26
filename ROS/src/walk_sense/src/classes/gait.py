@@ -19,12 +19,12 @@ class gait:
 
         # Redesigned for strafe
         self.body_height = 0.05   # How high the body will be relative to the ground, m
-        self.foot_center = np.array( [ [-0.15, 0.20, -self.body_height],
-                                       [0.14, 0.20, -self.body_height],
-                                       [-0.21, 0.0, -self.body_height],
-                                       [0.21, 0.0, -self.body_height],
-                                       [-0.15, -0.20, -self.body_height],
-                                       [0.15, -0.20, -self.body_height] ] ).T
+        self.foot_center = np.array( [ [-0.14, 0.17, -self.body_height],
+                                       [0.14, 0.17, -self.body_height],
+                                       [-0.20, 0.0, -self.body_height],
+                                       [0.20, 0.0, -self.body_height],
+                                       [-0.14, -0.17, -self.body_height],
+                                       [0.14, -0.17, -self.body_height] ] ).T
         self.foot_height = -0.01 # Z position of foot at peak stride in body frame, meters
 
-        self.max_stride_length = 0.065 # meters
+        self.max_stride_length = 0.068 # meters
