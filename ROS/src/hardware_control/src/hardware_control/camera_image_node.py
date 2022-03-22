@@ -38,6 +38,8 @@ def camera_image_node():
     # Used to convert between ROS and OpenCV images
     br = CvBridge()
 
+    image_encoding = "rgb8"
+
     # While ROS is still running.
     while not rospy.is_shutdown():
 
@@ -50,11 +52,18 @@ def camera_image_node():
             # Print debugging information to the terminal
             rospy.loginfo( 'publishing video frame' )
 
+            ( rows, cols, channels ) = image.shape
+
             # Publish the image.
             # The 'cv2_to_imgmsg' method converts an OpenCV
             # image to a ROS image message
-            pub.publish( br.cv2_to_imgmsg( image ) )
-            
+            image_message = br.cv2_to_imgmsg( image, encoding=image_encoding )
+            image_message.header.stamp = rospy.Time.now()
+            image_message.encoding = image_encoding
+            image_message.height = rows # Include size of the image
+            image_message.width = cols
+            pub.publish( image_message )
+
         else:
             rospy.loginfo( 'Could not capture image frame' )
 
