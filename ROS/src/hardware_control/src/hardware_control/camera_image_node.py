@@ -38,7 +38,7 @@ def camera_image_node():
     # Used to convert between ROS and OpenCV images
     br = CvBridge()
 
-    image_encoding = "rgb8"
+    image_encoding = "bgr8"
 
     # While ROS is still running.
     while not rospy.is_shutdown():
