@@ -49,6 +49,8 @@ class camera_image_target_processing():
     #==========================================================================
     def process_image(self, image_topic):
 
+        color = blue
+
         # Convert camera data to a cv2 object
         frame = self.br.imgmsg_to_cv2( image_topic )
 
@@ -58,44 +60,31 @@ class camera_image_target_processing():
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
 
-        mask = cv2.inRange( hsv, blue.low, blue.high) # Grab initial filter for desired color
+        mask = cv2.inRange( hsv, color.low, color.high) # Grab initial filter for desired color
         mask = cv2.erode( mask, None, iterations=2 ) # First pass of filtering
         mask = cv2.dilate( mask, None, iterations=2 )
 
-        cv2.imshow( "target_states", mask)
+        # find contours in the mask
+        contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # # loop over the color ranges
-        # for (lower, upper, colorName) in colorRanges:
-        #     # construct a mask for all colors in the current HSV range, then
-        #     # perform a series of dilations and erosions to remove any small
-        #     # blobs left in the mask
-        #     mask = cv2.inRange(hsv, lower, upper)
-        #     mask = cv2.erode(mask, None, iterations=2)
-        #     mask = cv2.dilate(mask, None, iterations=2)
+        # only proceed if at least one contour was found
+        if np.size( contours ):
+            # find the largest contour in the mask, then use it to compute
+            # the minimum enclosing circle and centroid
+            c = max(contours, key=cv2.contourArea)
+            ((x, y), radius) = cv2.minEnclosingCircle(c)
+            M = cv2.moments(c)
+            (cX, cY) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-        #     # find contours in the mask
-        #     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        #     cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-
-        #     # only proceed if at least one contour was found
-        #     if len(cnts) > 0:
-        #         # find the largest contour in the mask, then use it to compute
-        #         # the minimum enclosing circle and centroid
-        #         c = max(cnts, key=cv2.contourArea)
-        #         ((x, y), radius) = cv2.minEnclosingCircle(c)
-        #         M = cv2.moments(c)
-        #         (cX, cY) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
-        #         # only draw the enclosing circle and text if the radious meets
-        #         # a minimum size
-        #         if radius > 10:
-        #             cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
-        #             cv2.putText(frame, colorName, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX,
-        #                 1.0, (0, 255, 255), 2)
-
+            # only draw the enclosing circle and text if the radious meets
+            # a minimum size
+            if radius > 10:
+                cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
+                cv2.putText(frame, color.color, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0, (0, 255, 255), 2)
 
         # Display data, if we want
-        # cv2.imshow( "target_states", frame)
+        cv2.imshow( "target_states", frame)
         cv2.waitKey(1)
 
         # self.pub.publish( tst )
