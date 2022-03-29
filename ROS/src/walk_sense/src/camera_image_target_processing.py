@@ -11,11 +11,12 @@ from classes import walk_topics
 from hardware_control.hw_topics import hw_topics # List of acceptable channel names
 from walk_sense.msg import target_states
 
-
 #----------------------------------------
 # Set global flags and class instances
 hw_top = hw_topics()
 w_top = walk_topics.walk_topics()
+
+detection_radius = 50
 
 #==============================================================================
 class color():
@@ -42,7 +43,6 @@ class camera_image_target_processing():
 
         self.br = CvBridge() # Converts image ROS topics to cv2 objects
 
-
         rospy.Subscriber(hw_top.camera_image, Image, self.process_image)
 
 
@@ -54,11 +54,15 @@ class camera_image_target_processing():
         # Convert camera data to a cv2 object
         frame = self.br.imgmsg_to_cv2( image_topic )
 
-        # resize the frame, blur it, and convert it to the HSV color space
-        # frame = imutils.resize(frame, width=600)
+        # Initialize target state message
+        tgt_state = target_states()
+        tgt_state.header.stamp = rospy.Time.now()
+        tgt_state.camera_width = image_topic.width
+        tgt_state.camera_height = image_topic.height
+
+        # Blur the image, convert it to the HSV color space
         blurred = cv2.GaussianBlur(frame, (15, 15), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-
 
         mask = cv2.inRange( hsv, color.low, color.high) # Grab initial filter for desired color
         mask = cv2.erode( mask, None, iterations=2 ) # First pass of filtering
@@ -69,25 +73,31 @@ class camera_image_target_processing():
 
         # only proceed if at least one contour was found
         if np.size( contours ):
+
             # find the largest contour in the mask, then use it to compute
             # the minimum enclosing circle and centroid
             c = max(contours, key=cv2.contourArea)
             ((x, y), radius) = cv2.minEnclosingCircle(c)
-            M = cv2.moments(c)
-            (cX, cY) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
             # only draw the enclosing circle and text if the radious meets
             # a minimum size
-            if radius > 10:
+            if radius >= detection_radius:
                 cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
-                cv2.putText(frame, color.color, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0, (0, 255, 255), 2)
+
+                M = cv2.moments(c)
+                (cX, cY) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                cv2.putText(frame, color.color, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
+
+                tgt_state.target_found = True
+                tgt_state.target_position.x = cX
+                tgt_state.target_position.y = cY
 
         # Display data, if we want
         cv2.imshow( "target_states", frame)
         cv2.waitKey(1)
 
-        # self.pub.publish( tst )
+        # Publish simple topic with detected target state info
+        self.pub.publish( tgt_state )
 
 
 #==============================================================================
