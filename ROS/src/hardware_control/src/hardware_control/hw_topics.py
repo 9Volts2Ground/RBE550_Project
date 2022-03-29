@@ -10,6 +10,7 @@ class hw_topics:
         for leg in range( num_legs ):
             self.leg_states.append( f"leg_states{leg}" )
 
-        # Camera topics
+        # Seeker-related topics
+        self.seeker_states = 'seeker_states'
         self.camera_image = 'camera_image'
 

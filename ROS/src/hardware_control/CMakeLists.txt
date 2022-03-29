@@ -53,6 +53,7 @@ catkin_python_setup()
 add_message_files(
   FILES
   leg_states.msg
+  seeker_states.msg
 )
 
 ## Generate services in the 'srv' folder
