@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 #=====================
+import copy
 import numpy as np
 import rospy
 
@@ -19,6 +20,9 @@ hw_top = hw_topics()
 w_top = walk_topics()
 gt = gait()
 hrd = hardware_constants.hardware_constants()
+
+# Initialize global version of walking twist
+walk_twist_glob = walk_twist()
 
 #==============================================================================
 class gait_update_node():
@@ -55,37 +59,52 @@ class gait_update_node():
             self.lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
 
         # Subscribe to walk control after initializing all your stuff
-        rospy.Subscriber( w_top.walk_twist, walk_twist, self.update_gait )
+        rospy.Subscriber( w_top.walk_twist, walk_twist, self.store_new_gait_twist )
+
+        # Run the publisher node to calculate joint angles
+        self.update_gait()
 
     #==============================================================================
-    def update_gait( self, walk_twist ):
+    def store_new_gait_twist( self, walk_twist ):
+        global walk_twist_glob
+        walk_twist_glob = copy.deepcopy( walk_twist )
 
-        t = rospy.get_time()
-        self.dt = t - self.t_previous
+    #==============================================================================
+    def update_gait( self ):
 
-        # Find what part of the gait phase we are in
-        gt.phase += np.max( self.distance_foot_traveled) / gt.max_stride_length
-        while ( gt.phase > 1 ):
-            gt.phase -= 1 # Make sure we roll over properly, decrement the phase until it is < 1
+        rate = rospy.Rate( 50 )
 
-        # Clear distance_foot_traveled list
-        self.distance_foot_traveled = np.zeros( hrd.num_legs )
+        while not rospy.is_shutdown():
 
-        # Pass that phase in to grab our desired foot positions
-        foot_pos, foot_off_ground = self.foot_trajectory_planning( walk_twist.walk_direction )
-        joint_ang = foot_position_to_joint_angles( foot_pos ) # Grab joint angles from foot_position
+            # In case the node runs slower than desired, do our own time delta calcs
+            t = rospy.get_time()
+            self.dt = t - self.t_previous
 
-        # Package leg state info into message
-        for leg in range( hrd.num_legs ):
-            self.lg_st_msg[leg].header.stamp = rospy.Time.now()
-            self.lg_st_msg[leg].foot_off_ground = foot_off_ground[leg]
-            self.lg_st_msg[leg].foot_position.x = foot_pos[0,leg]
-            self.lg_st_msg[leg].foot_position.y = foot_pos[1,leg]
-            self.lg_st_msg[leg].foot_position.z = foot_pos[2,leg]
-            self.lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
-            self.pub[leg].publish( self.lg_st_msg[leg] ) # Publish the joint angles
+            # Find what part of the gait phase we are in
+            gt.phase += np.max( self.distance_foot_traveled) / gt.max_stride_length
+            while ( gt.phase > 1 ):
+                gt.phase -= 1 # Make sure we roll over properly, decrement the phase until it is < 1
 
-        self.t_previous = t
+            # Clear distance_foot_traveled list
+            self.distance_foot_traveled = np.zeros( hrd.num_legs )
+
+            # Pass that phase in to grab our desired foot positions
+            walk_twist_local = copy.deepcopy( walk_twist_glob ) # Save off local copy for safety
+            foot_pos, foot_off_ground = self.foot_trajectory_planning( walk_twist_local.walk_direction )
+            joint_ang = foot_position_to_joint_angles( foot_pos ) # Grab joint angles from foot_position
+
+            # Package leg state info into message
+            for leg in range( hrd.num_legs ):
+                self.lg_st_msg[leg].header.stamp = rospy.Time.now()
+                self.lg_st_msg[leg].foot_off_ground = foot_off_ground[leg]
+                self.lg_st_msg[leg].foot_position.x = foot_pos[0,leg]
+                self.lg_st_msg[leg].foot_position.y = foot_pos[1,leg]
+                self.lg_st_msg[leg].foot_position.z = foot_pos[2,leg]
+                self.lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
+                self.pub[leg].publish( self.lg_st_msg[leg] ) # Publish the joint angles
+
+            self.t_previous = t
+            rate.sleep()
 
     #==============================================================================
     def foot_trajectory_planning( self, twist ):

@@ -11,7 +11,7 @@ w_top = walk_topics.walk_topics()
 #==============================================================================
 def walk_control_node():
     rospy.init_node( "walk_control_node", anonymous = True )
-    rate = rospy.Rate( 50 )
+    rate = rospy.Rate( 1 )
 
     pub = rospy.Publisher( w_top.walk_twist, walk_twist, queue_size = 1 )
 
