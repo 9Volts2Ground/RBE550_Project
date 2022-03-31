@@ -8,6 +8,7 @@ import time
 from classes import walk_topics
 from walk_sense.msg import walk_twist
 from walk_sense.msg import target_states
+from walk_sense.msg import target_track
 
 w_top = walk_topics.walk_topics()
 
@@ -25,6 +26,8 @@ class walk_control_node():
         self.target_search_mode_options = ['target_search', 'target_track', 'target_lost', 'target_acquired']
         self.target_search_mode = self.target_search_mode_options[0]
         self.previous_target_search_mode = self.target_search_mode
+        self.azimuth_position = 0.0
+        self.elevation_position = 0.0
         self.target_lost_time = time.time()
         self.target_lost_timeout = 2.0
         self.target_acquire_distance = 1.5 # meters
@@ -40,6 +43,7 @@ class walk_control_node():
         rospy.Subscriber( w_top.target_states, target_states, self.grab_target_states )
         # rospy.Subscriber( w_top.range_states, range_states, self.grab_range_states )
         self.pub = rospy.Publisher( w_top.walk_twist, walk_twist, queue_size = 1 )
+        self.pub_track = rospy.Publisher( w_top.target_track, target_track, queue_size = 1 )
 
         self.walk_control_node()
 
@@ -89,11 +93,20 @@ class walk_control_node():
             else: # Target already acquired
                 twist = self.target_found_logic()
 
+            # Package target search mode history again
+            self.previous_target_search_mode = self.target_search_mode
+
             # Send out the commanded twist
             self.pub.publish( twist )
 
-            # Package target search mode history again
-            self.previous_target_search_mode = self.target_search_mode
+            # Send out the target track states
+            track = target_track()
+            track.header.stamp = rospy.Time.now()
+            track.tracking_state = self.target_search_mode
+            track.tracking_state_prev = self.previous_target_search_mode
+            track.tgt_pos_in_frame.x = self.azimuth_position
+            track.tgt_pos_in_frame.y = self.elevation_position
+            self.pub_track.publish( track )
 
             rate.sleep()
 
@@ -117,12 +130,14 @@ class walk_control_node():
 
         # Spin until we center the target in frame
         half_image_width = target_state.camera_width / 2
-        azimuth_position = ( half_image_width - target_state.target_position.x ) / half_image_width # Lef half of image is positive
-        self.target_az_side = np.sign( azimuth_position ) # Track which side the target was last seen on
+        half_image_height = target_state.camera_height / 2
+        self.azimuth_position = ( half_image_width - target_state.target_position.x ) / half_image_width # Lef half of image is positive
+        self.elevation_position = ( half_image_height - target_state.target_position.y ) / half_image_height
+        self.target_az_side = np.sign( self.azimuth_position ) # Track which side the target was last seen on
 
-        if abs( azimuth_position ) > self.target_centered_tolerance:
+        if abs( self.azimuth_position ) > self.target_centered_tolerance:
             # Target is not centered in frame. Add some spin to the gait
-            twist.walk_direction.angular.z = azimuth_position * self.spin_gain
+            twist.walk_direction.angular.z = self.azimuth_position * self.spin_gain
             twist = self.scale_twist( twist )
 
         # Adjust the seeker

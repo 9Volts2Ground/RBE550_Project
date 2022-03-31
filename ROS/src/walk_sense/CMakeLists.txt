@@ -54,6 +54,7 @@ add_message_files(
   FILES
   walk_twist.msg
   target_states.msg
+  target_track.msg
 )
 
 ## Generate services in the 'srv' folder
