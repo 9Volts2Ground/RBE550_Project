@@ -3,6 +3,7 @@
 import copy
 import rospy
 import numpy as np
+import time
 
 from classes import walk_topics
 from walk_sense.msg import walk_twist
@@ -24,7 +25,7 @@ class walk_control_node():
         self.target_search_mode_options = ['target_search', 'target_track', 'target_lost', 'target_acquired']
         self.target_search_mode = self.target_search_mode_options[0]
         self.previous_target_search_mode = self.target_search_mode
-        self.target_lost_time = 0.0
+        self.target_lost_time = time.time()
         self.target_lost_timeout = 2.0
         self.target_acquire_distance = 1.5 # meters
 
@@ -67,10 +68,10 @@ class walk_control_node():
             elif self.previous_target_search_mode == self.target_search_mode_options[1]:
                 # First frame target lost
                 self.target_search_mode = self.target_search_mode_options[2]
-                self.target_lost_time = rospy.Time.now()
+                self.target_lost_time = time.time()
 
             elif self.previous_target_search_mode == self.target_search_mode_options[2] and \
-                (float(rospy.Time.now()) - self.target_lost_time >= self.target_lost_timeout):
+                (time.time() - self.target_lost_time >= self.target_lost_timeout):
                 # We've lost the target for long enough, go back to target search
                 self.target_search_mode = self.target_search_mode_options[0]
             else:
