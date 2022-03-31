@@ -25,7 +25,7 @@ class seeker_control_node():
 
         # Gain values to tune
         self.target_centered_tolerance = 0.1
-        self.el_gain = 0.2
+        self.el_gain = 0.05
         self.el_min = np.deg2rad( hrd.seekerMin[1] - hrd.seekerCenter[1] )
         self.el_max = np.deg2rad( hrd.seekerMax[1] - hrd.seekerCenter[1] )
 
