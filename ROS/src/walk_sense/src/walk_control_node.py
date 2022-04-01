@@ -153,7 +153,7 @@ class walk_control_node():
         '''
         twist = self.init_twist()
         twist.walk_direction.linear.y = self.max_velocity # Command it to walk forward, hoping the target is still there
-        twist.walk_direction.angular.z = 0.2 * self.target_az_side # rad/s
+        twist.walk_direction.angular.z = -0.2 * self.target_az_side # rad/s
         twist = self.scale_twist( twist )
         return twist
 

@@ -4,8 +4,8 @@
 # - https://pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
 
 # Import the necessary libraries
-from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 import cv2
+from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 import numpy as np
 import rospy
 from sensor_msgs.msg import Image
@@ -36,16 +36,7 @@ def camera_image_node():
     rate = rospy.Rate( frame_rate )
 
     # Create object to capture image
-    if is_wanda:
-        # Use RPi-specific camera libraries
-        from picamera import PiCamera
-        cam = PiCamera()
-        resolution = ( 640, 480 )
-        cam.resolution = resolution
-        cam.framerate = frame_rate
-    else:
-        # Use generic camera cv2 library
-        cam = cv2.VideoCapture( 0 ) # The argument '0' gets the default webcam
+    cam = cv2.VideoCapture( 0 ) # The argument '0' gets the default webcam
 
     image_encoding = "bgr8"
 
@@ -56,19 +47,13 @@ def camera_image_node():
     while not rospy.is_shutdown():
 
         # Record image
-        if is_wanda:
-            frame = np.empty( resolution[0]*resolution[1]*3, dtype=np.uint8 ) #Initialize empty array
-            cam.capture( frame, format='bgr', use_video_port=True ) # Capture frame
-            image = frame.reshape( (resolution[1], resolution[0], 3) ) # Shove it in a np array
-            if np.shape( image ): # Check that we got something
-                image_captured = True
-            else:
-                image_captured = False
-        else:
-            # Not running on robot hardware. Just use regular webcam
-            image_captured, image = cam.read()
+        image_captured, image = cam.read()
 
         if image_captured == True:
+
+            if is_wanda:
+                image = cv2.rotate( image, cv2.ROTATE_180 )
+
             # Print debugging information to the terminal
             rospy.loginfo( 'publishing video frame' )
 
