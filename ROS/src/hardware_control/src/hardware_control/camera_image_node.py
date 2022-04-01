@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# Basics ROS program to publish real-time streaming video
 # Based on code from:
 # - https://automaticaddison.com
 # - https://pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
@@ -7,6 +6,7 @@
 # Import the necessary libraries
 from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 import cv2
+import numpy as np
 import rospy
 from sensor_msgs.msg import Image
 
@@ -32,18 +32,17 @@ def camera_image_node():
     pub = rospy.Publisher(top.camera_image, Image, queue_size=10)
 
     # Control max rate of image capture, Hz
-    rate = rospy.Rate( 10 )
+    frame_rate = 10 # Hz
+    rate = rospy.Rate( frame_rate )
 
     # Create object to capture image
     if is_wanda:
         # Use RPi-specific camera libraries
         from picamera import PiCamera
-        from picamra.array import PiRGBArray
         cam = PiCamera()
         resolution = ( 640, 480 )
         cam.resolution = resolution
-        cam.framerate = 10
-        cam_image = PiRGBArray( cam, resolution )
+        cam.framerate = frame_rate
     else:
         # Use generic camera cv2 library
         cam = cv2.VideoCapture( 0 ) # The argument '0' gets the default webcam
@@ -56,14 +55,17 @@ def camera_image_node():
     # While ROS is still running.
     while not rospy.is_shutdown():
 
-        # Capture frame-by-frame
-        # This method returns True/False as well
-        # as the video frame.
+        # Record image
         if is_wanda:
-            frame = cam.capture( cam_image, format='bgr', use_video_port=True )
-            image = frame.array
-            cam_image.truncate(0) # Clear video stream to prep for next frame
+            frame = np.empty( resolution[0]*resolution[1]*3, dtype=np.uint8 ) #Initialize empty array
+            cam.capture( frame, format='bgr', use_video_port=True ) # Capture frame
+            image = frame.reshape( (resolution[1], resolution[0], 3) ) # Shove it in a np array
+            if np.shape( image ): # Check that we got something
+                image_captured = True
+            else:
+                image_captured = False
         else:
+            # Not running on robot hardware. Just use regular webcam
             image_captured, image = cam.read()
 
         if image_captured == True:
@@ -72,9 +74,7 @@ def camera_image_node():
 
             ( rows, cols, channels ) = image.shape
 
-            # Publish the image.
-            # The 'cv2_to_imgmsg' method converts an OpenCV
-            # image to a ROS image message
+            # Publish the image
             image_message = br.cv2_to_imgmsg( image, encoding=image_encoding )
             image_message.header.stamp = rospy.Time.now()
             image_message.encoding = image_encoding
