@@ -29,8 +29,8 @@ class color():
 
 
 # define the color ranges
-green = color( low = np.array([29, 86, 6]), high = np.array([64, 255, 255]), color='green' )
-blue = color( low = np.array([57, 68, 0]), high=np.array([151, 255, 255]), color='blue')
+green = color( low = np.array([29, 86, 20]), high = np.array([64, 255, 255]), color='green' )
+blue = color( low = np.array([60, 100, 40]), high=np.array([150, 255, 255]), color='blue')
 
 #==============================================================================
 class camera_image_target_processing():
