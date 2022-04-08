@@ -6,10 +6,13 @@ import numpy as np
 import time
 
 from classes import walk_topics
+from hardware_control.hw_topics import hw_topics
+from hardware_control.msg import seeker_states
 from walk_sense.msg import walk_twist
 from walk_sense.msg import target_states
 from walk_sense.msg import target_track
 
+hw_top = hw_topics()
 w_top = walk_topics.walk_topics()
 
 #==============================================================================
@@ -20,6 +23,7 @@ class walk_control_node():
         # Initialize topic data to work with
         self.target_states = target_states()
         # self.range_states = range_states()
+        self.seeker_states = seeker_states()
 
         #----------------------------------
         # Define local variables. Detection states
@@ -36,12 +40,15 @@ class walk_control_node():
         self.angular_moment = 0.05 # Approximate distance from body to foot
         self.max_velocity = 0.015 # m/s
         self.target_centered_tolerance = 0.1 # Acceptable distance from center of image
+        self.seeker_turned_tolerance = 0.26 # ~15 degrees off center threshold to add spin to the robot
+        self.seeker_az_gain = 0.1
         self.target_az_side = 1 # >0 = left, <0 = right
         self.spin_gain = 0.25 # Scales error relative to image position into angular velocity
 
         # Turn on publisher and subscribers
         rospy.Subscriber( w_top.target_states, target_states, self.grab_target_states )
         # rospy.Subscriber( w_top.range_states, range_states, self.grab_range_states )
+        rospy.Subscriber( hw_top.seeker_states, seeker_states, self.grab_seeker_states )
         self.pub = rospy.Publisher( w_top.walk_twist, walk_twist, queue_size = 1 )
         self.pub_track = rospy.Publisher( w_top.target_track, target_track, queue_size = 1 )
 
@@ -131,16 +138,19 @@ class walk_control_node():
         # Spin until we center the target in frame
         half_image_width = target_state.camera_width / 2
         half_image_height = target_state.camera_height / 2
-        self.azimuth_position = ( half_image_width - target_state.target_position.x ) / half_image_width # Lef half of image is positive
+        self.azimuth_position = ( half_image_width - target_state.target_position.x ) / half_image_width # Left half of image is positive
         self.elevation_position = ( half_image_height - target_state.target_position.y ) / half_image_height
         self.target_az_side = np.sign( self.azimuth_position ) # Track which side the target was last seen on
 
+        # If target is not centered in frame, add some spin to the gait
         if abs( self.azimuth_position ) > self.target_centered_tolerance:
-            # Target is not centered in frame. Add some spin to the gait
-            twist.walk_direction.angular.z = self.azimuth_position * self.spin_gain
-            twist = self.scale_twist( twist )
+            twist.walk_direction.angular.z += self.azimuth_position * self.spin_gain
 
-        # Adjust the seeker
+        # If the seeker isn't pointing straight forward, spin to try and center the seeker
+        if abs( self.seeker_states.joint_angle.position[0] ) > self.seeker_turned_tolerance:
+            twist.walk_direction.angular.z += self.seeker_states.joint_angle.position[0] * self.seeker_az_gain
+
+        twist = self.scale_twist( twist )
 
         # Check range sensor for termination
 
@@ -177,6 +187,13 @@ class walk_control_node():
         Grabs range_states data from ultrasonic range sensor topic to store locally
         """
         self.range_states = copy.deepcopy( range_states )
+
+    #======================================================
+    def grab_seeker_states( self, seeker_states ):
+        """
+        Grabs seeker_states data from seeker servo controller topic to store locally
+        """
+        self.seeker_states = copy.deepcopy( seeker_states )
 
     #======================================================
     def scale_twist( self, twist ):
