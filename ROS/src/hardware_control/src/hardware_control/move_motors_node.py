@@ -44,7 +44,7 @@ def move_leg_motors( leg_states ):
 #==============================================================================
 def move_seeker_motors( seeker_states ):
 
-    for joint in range(2):
+    for joint in range( hrd.num_seeker_joints ):
 
         # Convert angle to degrees, offset it by the hardware 0 value
         # Offset calculation based on center of calibrated servo

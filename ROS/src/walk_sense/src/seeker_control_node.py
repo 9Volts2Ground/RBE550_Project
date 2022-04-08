@@ -25,25 +25,36 @@ class seeker_control_node():
 
         # Gain values to tune
         self.target_centered_tolerance = 0.1
-        self.el_gain = 0.05
-        self.el_min = np.deg2rad( hrd.seekerMin[1] - hrd.seekerCenter[1] )
-        self.el_max = np.deg2rad( hrd.seekerMax[1] - hrd.seekerCenter[1] )
+        self.seeker_gain = 0.05
+
+        self.seeker_min = [0,0]
+        self.seeker_max = [0,0]
+        for servo in range( hrd.num_seeker_joints ):
+            self.seeker_min[servo] = np.deg2rad( hrd.seekerMin[servo] - hrd.seekerCenter[servo] )
+            self.seeker_max[servo] = np.deg2rad( hrd.seekerMax[servo] - hrd.seekerCenter[servo] )
 
         # Turn on publisher and subscribers
         self.pub = rospy.Publisher( hw_top.seeker_states, seeker_states, queue_size = 1 )
-        rospy.Subscriber( w_top.target_track, target_track, self.seeker_el_control )
+        rospy.Subscriber( w_top.target_track, target_track, self.seeker_control )
 
     #================================================================
-    def seeker_el_control( self, target_track ):
+    def seeker_control( self, target_track ):
 
         if 'target_track' in target_track.tracking_state:
+
+            # We are tracking a target. See if we need to point the seeker az servo
+            if abs( target_track.tgt_pos_in_frame.x ) > self.target_centered_tolerance:
+                # The target is not centered in the frame. Point the seeker
+                self.skr_state.joint_angle.position[0] += target_track.tgt_pos_in_frame.x * self.seeker_gain
+                # Make sure seeker angles stay within bounds
+                self.skr_state.joint_angle.position[0] = np.max( [ np.min( [self.skr_state.joint_angle.position[0], self.seeker_max[0] ] ), self.seeker_min[0] ] )
+
             # We are tracking a target. See if we need to point the seeker el servo
             if abs( target_track.tgt_pos_in_frame.y ) > self.target_centered_tolerance:
                 # The target is not centered in the frame. Point the seeker
-                self.skr_state.joint_angle.position[1] += target_track.tgt_pos_in_frame.y * self.el_gain
-
+                self.skr_state.joint_angle.position[1] += target_track.tgt_pos_in_frame.y * self.seeker_gain
                 # Make sure seeker angles stay within bounds
-                self.skr_state.joint_angle.position[1] = np.max( [ np.min( [self.skr_state.joint_angle.position[1], self.el_max ] ), self.el_min ] )
+                self.skr_state.joint_angle.position[1] = np.max( [ np.min( [self.skr_state.joint_angle.position[1], self.seeker_max[1] ] ), self.seeker_min[1] ] )
 
 
         self.skr_state.header.stamp = rospy.Time.now()

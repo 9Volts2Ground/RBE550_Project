@@ -14,6 +14,7 @@ class hardware_constants:
 
         self.num_legs = 6
         self.num_joints = 3 # Number of joints in each leg
+        self.num_seeker_joints = 2
 
         # Vector from body center to hip joints, meters
         self.s = np.array([ [ -0.055, 0.076162, 0.048 ],        # Front left
