@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from cv_bridge import CvBridge
 import cv2
-import imutils
 import numpy as np
 import rospy
 from sensor_msgs.msg import Image # Image is the message type
@@ -39,9 +38,13 @@ class camera_image_target_processing():
         # Initialize ROS communication
         rospy.init_node( "camera_image_target_processing", anonymous=True)
 
-        self.pub = rospy.Publisher( w_top.target_states, target_states, queue_size = 10)
+        # Set up publishers
+        self.pub = rospy.Publisher( w_top.target_states, target_states, queue_size = 10 )
+        self.image_pub = rospy.Publisher( w_top.processed_image, Image, queue_size = 10 )
 
-        self.br = CvBridge() # Converts image ROS topics to cv2 objects
+        # Initialize class to convert between ROS image topic and cv2
+        self.br = CvBridge()
+        self.image_encoding = "bgr8"
 
         rospy.Subscriber(hw_top.camera_image, Image, self.process_image)
 
@@ -92,12 +95,21 @@ class camera_image_target_processing():
                 tgt_state.target_position.x = cX
                 tgt_state.target_position.y = cY
 
-        # Display data, if we want
-        cv2.imshow( "target_states", frame)
-        cv2.waitKey(1)
+        # # Display data, if we want
+        # cv2.imshow( "target_states", frame)
+        # cv2.waitKey(1)
 
         # Publish simple topic with detected target state info
         self.pub.publish( tgt_state )
+
+        # Publish processed image so we can scope it using other ROS tools
+        ( rows, cols, channels ) = frame.shape
+        image_message = self.br.cv2_to_imgmsg( frame, encoding=self.image_encoding )
+        image_message.header.stamp = rospy.Time.now()
+        image_message.encoding = self.image_encoding
+        image_message.height = rows # Include size of the image
+        image_message.width = cols
+        self.image_pub.publish( image_message )
 
 
 #==============================================================================
