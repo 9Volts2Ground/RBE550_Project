@@ -73,6 +73,7 @@ def camera_image_node():
         # Sleep just enough to maintain the desired rate
         rate.sleep()
 
+#==============================================================================
 if __name__ == '__main__':
     try:
         camera_image_node()

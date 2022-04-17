@@ -1,40 +1,53 @@
 #!/usr/bin/env python3
-import numpy as np
-import os
 import rospy
 
 # Custom libraries
-from classes import topics
-from classes import Led
-from classes import hardware_constants
-from walk_sense.msg import leg_states
+from hw_topics import hw_topics
+from Led import Led
+from hardware_constants import hardware_constants
+from hardware_control.msg import leg_states
+
+#==============================================================================
+class colors():
+    def __init__(self):
+        self.red =      [10, 0, 0]
+        self.green =    [0, 0, 10]
+        self.blue =     [0, 10, 0]
 
 #----------------------------------------
 # Set global flags and class instances
-top = topics.topics()
-hrd = hardware_constants.hardware_constants()
-led = Led.Led()
-
-#==============================================================================
-def set_leg_led( leg_states ):
-    for leg in range( 6 ):
-        if leg_states.foot_off_ground[leg]:
-            led_color = [0, 0, 10]
-        else:
-            led_color = [0, 10, 0]
-
-        try:
-            led.setColor( hrd.leg2led[leg], led_color )
-            print( led_color )
-        except:
-            pass
+hw_top = hw_topics()
+hrd = hardware_constants()
+led = Led()
+color = colors()
 
 #==============================================================================
 def led_control_node():
     rospy.init_node( "led_control_node", anonymous=True )
-    rospy.Subscriber( top.leg_states, leg_states, set_leg_led )
+
+    for leg in range( hrd.num_legs ):
+        rospy.Subscriber( hw_top.leg_states[leg], leg_states, set_leg_led )
+
     rospy.spin()
 
 #==============================================================================
+def set_leg_led( leg_states ):
+
+    if leg_states.foot_off_ground:
+        led_color = color.green
+    else:
+        led_color = color.blue
+
+    try:
+        led.setColor( hrd.leg2led[leg_states.leg_num], led_color )
+        print( led_color )
+    except:
+        pass
+        # print( f"led_color {leg_states.leg_num} (not lit) = {led_color}")
+
+#==============================================================================
 if __name__ == '__main__':
-    led_control_node()
+    try:
+        led_control_node()
+    except rospy.ROSInterruptException:
+        pass

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import time
-from classes import hardware_constants
-hrd = hardware_constants.hardware_constants()
+from hardware_constants import hardware_constants
+hrd = hardware_constants()
 if hrd.wanda:
-    from rpi_ws281x import *  # Color, Adafruit_NeoPixel
+    from rpi_ws281x import Adafruit_NeoPixel, Color
 
 # Note that the '&' operator is considered a 'Bitwise AND'
 # Basically, it's a modulo that includes the mod value as itself (instead of 0)
@@ -41,9 +41,13 @@ class Led:
 
         if hrd.wanda:
             # Create NeoPixel object with appropriate configuration.
-            self.strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ,
-                                        LED_DMA, LED_INVERT, LED_BRIGHTNESS,
-                                        LED_CHANNEL)
+            self.strip = Adafruit_NeoPixel( LED_COUNT,
+                                            LED_PIN,
+                                            LED_FREQ_HZ,
+                                            LED_DMA,
+                                            LED_INVERT,
+                                            LED_BRIGHTNESS,
+                                            LED_CHANNEL )
             # Intialize the library (must be called once before other functions).
             self.strip.begin()
 
@@ -65,12 +69,16 @@ class Led:
             Color object with RGB values in designated order (given by input
             variable order)
         """
-        B = R_G_B & 255
-        G = R_G_B >> 8 & 255
         R = R_G_B >> 16 & 255
+        G = R_G_B >> 8 & 255
+        B = R_G_B & 255
         Led_type = ['GRB', 'GBR', 'RGB', 'RBG', 'BRG', 'BGR']
-        color = [Color(G,R,B), Color(G,B,R), Color(R,G,B), Color(R,B,G),
-                 Color(B,R,G), Color(B,G,R)]
+        color = [Color(G,R,B),
+                 Color(G,B,R),
+                 Color(R,G,B),
+                 Color(R,B,G),
+                 Color(B,R,G),
+                 Color(B,G,R) ]
         if order in Led_type:
             return color[Led_type.index(order)]
 
@@ -140,7 +148,7 @@ class Led:
                     for i in range(0, self.strip.numPixels(), 3):
                         self.strip.setPixelColor(i+q, 0)
 
-    # =========================================================================
+    #=========================================================================
     def wheel(self, pos):
         """
         Generates rainbow colors across 0-255 positions.

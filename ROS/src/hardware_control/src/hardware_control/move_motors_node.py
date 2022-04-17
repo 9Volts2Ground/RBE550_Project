@@ -14,9 +14,22 @@ top = hw_topics()
 hrd = hardware_constants()
 servo = Servo()
 
-seeker_motors = ['az', 'el']
+seeker_motors = ['az', 'el'] # Used for error logging
 
 rad2deg = 180/np.pi
+
+#==============================================================================
+def move_motors_node():
+    rospy.init_node( "move_motors_node", anonymous=True )
+
+    # Kick off subscriber for the seeker
+    rospy.Subscriber( top.seeker_states, seeker_states, move_seeker_motors )
+
+    # Kick off unique subscriber for each leg
+    for leg in range( hrd.num_legs ):
+        rospy.Subscriber( top.leg_states[leg], leg_states, move_leg_motors )
+
+    rospy.spin()
 
 #==============================================================================
 def move_leg_motors( leg_states ):
@@ -64,20 +77,9 @@ def move_seeker_motors( seeker_states ):
         except:
             print("Could not move seeker servo: ", seeker_motors[joint])
 
-
-#==============================================================================
-def move_motors_node():
-    rospy.init_node( "move_motors_node", anonymous=True )
-
-    # Kick off subscriber for the seeker
-    rospy.Subscriber( top.seeker_states, seeker_states, move_seeker_motors )
-
-    # Kick off unique subscriber for each leg
-    for leg in range( hrd.num_legs ):
-        rospy.Subscriber( top.leg_states[leg], leg_states, move_leg_motors )
-
-    rospy.spin()
-
 #==============================================================================
 if __name__ == '__main__':
-    move_motors_node()
+    try:
+        move_motors_node()
+    except rospy.ROSInterruptException:
+        pass
