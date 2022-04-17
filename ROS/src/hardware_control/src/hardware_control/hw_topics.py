@@ -14,3 +14,6 @@ class hw_topics:
         self.seeker_states = 'seeker_states'
         self.camera_image = 'camera_image'
 
+        # Other sensor related topics to publish
+        self.imu_data = 'imu_data'
+
