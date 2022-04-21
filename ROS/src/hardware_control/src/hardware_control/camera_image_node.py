@@ -55,7 +55,7 @@ def camera_image_node():
                 image = cv2.rotate( image, cv2.ROTATE_180 )
 
             # Print debugging information to the terminal
-            rospy.loginfo( 'publishing video frame' )
+            # rospy.loginfo( 'publishing video frame' )
 
             ( rows, cols, channels ) = image.shape
 

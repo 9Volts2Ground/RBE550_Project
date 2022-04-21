@@ -8,6 +8,7 @@ import time
 from classes import walk_topics
 from hardware_control.hw_topics import hw_topics
 from hardware_control.msg import seeker_states
+from sensor_msgs.msg import Range # Standard ROS message type
 from walk_sense.msg import walk_twist
 from walk_sense.msg import target_states
 from walk_sense.msg import target_track
@@ -22,7 +23,7 @@ class walk_control_node():
 
         # Initialize topic data to work with
         self.target_states = target_states()
-        # self.range_states = range_states()
+        self.range_sensor = Range()
         self.seeker_states = seeker_states()
 
         #----------------------------------
@@ -34,11 +35,11 @@ class walk_control_node():
         self.elevation_position = 0.0
         self.target_lost_time = time.time()
         self.target_lost_timeout = 2.0
-        self.target_acquire_distance = 1.5 # meters
+        self.target_acquire_distance = 1 # meters
 
         # Other logic variables
         self.angular_moment = 0.05 # Approximate distance from body to foot
-        self.max_velocity = 0.015 # m/s
+        self.max_velocity = 0.025 # m/s
         self.target_centered_tolerance = 0.1 # Acceptable distance from center of image
         self.seeker_turned_tolerance = 0.26 # ~15 degrees off center threshold to add spin to the robot
         self.seeker_az_gain = 0.1
@@ -47,7 +48,7 @@ class walk_control_node():
 
         # Turn on publisher and subscribers
         rospy.Subscriber( w_top.target_states, target_states, self.grab_target_states )
-        # rospy.Subscriber( w_top.range_states, range_states, self.grab_range_states )
+        rospy.Subscriber( w_top.range_sensor, Range, self.grab_range_states )
         rospy.Subscriber( hw_top.seeker_states, seeker_states, self.grab_seeker_states )
         self.pub = rospy.Publisher( w_top.walk_twist, walk_twist, queue_size = 1 )
         self.pub_track = rospy.Publisher( w_top.target_track, target_track, queue_size = 1 )
@@ -64,7 +65,7 @@ class walk_control_node():
 
             # Grab static, local copies of states to work with
             target_state = copy.deepcopy( self.target_states )
-            # range_state = copy.deepcopy( self.range_states )
+            range_sensor = copy.deepcopy( self.range_sensor )
 
             #------------------------------------------------------------------------
             # Determine which state we need to be in
@@ -74,8 +75,9 @@ class walk_control_node():
             elif target_state.target_found:
                 # Tracking target
                 self.target_search_mode = self.target_search_mode_options[1]
-                # if range_state.range <= self.target_acquire_distance:
-                #     self.target_search_mode = self.target_search_mode_options[3]
+                if range_sensor.range <= self.target_acquire_distance:
+                    # If we get close enough, stop moving
+                    self.target_search_mode = self.target_search_mode_options[3]
             elif self.previous_target_search_mode == self.target_search_mode_options[1]:
                 # First frame target lost
                 self.target_search_mode = self.target_search_mode_options[2]
@@ -152,8 +154,6 @@ class walk_control_node():
 
         twist = self.scale_twist( twist )
 
-        # Check range sensor for termination
-
         return twist
 
     #======================================================
@@ -182,11 +182,11 @@ class walk_control_node():
         self.target_states = copy.deepcopy( target_states )
 
     #======================================================
-    def grab_range_states( self, range_states ):
+    def grab_range_states( self, range_sensor ):
         """
-        Grabs range_states data from ultrasonic range sensor topic to store locally
+        Grabs range_sensor data from ultrasonic range sensor topic to store locally
         """
-        self.range_states = copy.deepcopy( range_states )
+        self.range_sensor = copy.deepcopy( range_sensor )
 
     #======================================================
     def grab_seeker_states( self, seeker_states ):

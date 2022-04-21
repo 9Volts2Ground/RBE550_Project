@@ -6,6 +6,7 @@ import rospy
 
 # Custom classes
 from classes import walk_topics
+from hardware_control import Ultrasonic
 from sensor_msgs.msg import Range
 from walk_sense.msg import target_track
 
@@ -14,6 +15,9 @@ w_top = walk_topics.walk_topics()
 class range_sensor_control_node():
     def __init__(self):
         rospy.init_node( "range_sensor_control_node", anonymous=True )
+
+        # Initialize ultrasonic range sensor class
+        self.sonic = Ultrasonic.Ultrasonic()
 
         # Initialize state topics
         self.target_track = target_track()
@@ -42,7 +46,9 @@ class range_sensor_control_node():
 
             if target_track.tracking_state in ['target_track', 'target_lost']:
                 # Ping for range measurement, publish data
-                self.range_sensor.range = 1
+                range, returned = self.sonic.get_distance()
+
+                self.range_sensor.range = range
 
                 self.pub.publish( self.range_sensor )
 

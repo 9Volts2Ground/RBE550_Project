@@ -12,6 +12,12 @@
         output="screen"
     />
     <node
+        pkg="hardware_control"
+        name="led_control_node"
+        type="led_control_node.py"
+        output="screen"
+    />
+    <node
         pkg="walk_sense"
         name="walk_control_node"
         type="walk_control_node.py"
@@ -33,6 +39,12 @@
         pkg="walk_sense"
         name="camera_image_target_processing"
         type="camera_image_target_processing.py"
+        output="screen"
+    />
+    <node
+        pkg="walk_sense"
+        name="range_sensor_control_node"
+        type="range_sensor_control_node.py"
         output="screen"
     />
 </launch>

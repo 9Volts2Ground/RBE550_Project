@@ -3,7 +3,6 @@ import time
 from hardware_constants import hardware_constants
 hrd = hardware_constants()
 if hrd.wanda:
-    print("Importing servo library")
     import Adafruit_PCA9685
 
 #==============================================================================
