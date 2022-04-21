@@ -75,7 +75,7 @@ class walk_control_node():
             elif target_state.target_found:
                 # Tracking target
                 self.target_search_mode = self.target_search_mode_options[1]
-                if range_sensor.range <= self.target_acquire_distance:
+                if range_sensor.range <= self.target_acquire_distance and range_sensor.range >= range_sensor.min_range:
                     # If we get close enough, stop moving
                     self.target_search_mode = self.target_search_mode_options[3]
             elif self.previous_target_search_mode == self.target_search_mode_options[1]:
