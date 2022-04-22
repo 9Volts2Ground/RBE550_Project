@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
+from tf.transformations import quaternion_matrix
 
 # Custom libraries
 from hardware_control import hardware_constants
@@ -8,21 +9,42 @@ from hardware_control import rotation
 hrd = hardware_constants.hardware_constants()
 
 #==============================================================================
-def foot_position_to_joint_angles( foot_position ):
-    # Grab joint angles from foot_position
-    joint_angles = np.zeros( shape=(3,6) )
+def foot_position_to_joint_angles( foot_position_g, body_ground_transform ):
+    """Calculates joint angles for all legs, given the position
+    of all feet in the body_ground frame, and the transform
+    between the body_ground and body frames.
+    Args:
+        foot_position_g[3,6] (real): Position of each foot [cord,leg]
+            in the body_ground frame
+    Returns:
+        joint_angles[3,6] (real): Joint angles for each leg to
+            achieve the desired foot position [joint,leg]
+    """
+
+    # Grab transformation matrix between body_ground and body frames
+    # ToDo: fill this in, euler -> R calculation
+    Tbg = quaternion_matrix( [ body_ground_transform.transform.rotation.w,
+                               body_ground_transform.transform.rotation.x,
+                               body_ground_transform.transform.rotation.y,
+                               body_ground_transform.transform.rotation.z ] )
+    Tbg[0:3,3] = -np.array( [ body_ground_transform.transform.translation.x,
+                              body_ground_transform.transform.translation.y,
+                              body_ground_transform.transform.translation.z ] ) # Mind your negatives
+
+    # Grab joint angles from foot_position_g
+    joint_angles = np.zeros( shape=(3,6) ) # Initialize array
     for leg in range(6):
 
-        Rz = rotation.rotrz( hrd.alpha_offset[leg])
+        Rz = rotation.rotrz( hrd.alpha_offset[leg] )
 
         # Grab transformation from Wanda body frame to shoulder[leg] frame
-        T = np.identity( 4 )
-        T[0:3,0:3] = Rz.T
-        T[0:3,3] = -Rz.T @ hrd.s[:,leg]
+        Tsb = np.identity( 4 )
+        Tsb[0:3,0:3] = Rz.T
+        Tsb[0:3,3] = -Rz.T @ hrd.s[:,leg]
 
-        s_array = np.append( foot_position[:,leg], 1.0 )
+        foot_vec_ground = np.append( foot_position_g[:,leg], 1.0 )
 
-        position_shoulder_frame = T @ s_array.T
+        position_shoulder_frame = Tsb @ Tbg @ foot_vec_ground.T
 
         joint_angles[:,leg] = ikine_leg( position_shoulder_frame[0:3] )
 
@@ -31,7 +53,7 @@ def foot_position_to_joint_angles( foot_position ):
 #==============================================================================
 def ikine_leg( pos ):
     """Given array of [x,y,z] foot coordinates in the leg shoulder frame,
-    calculate shoulder, knee, ankle joint angles necessary to achieve
+    calculate shoulder, knee, and ankle joint angles necessary to achieve
     the desired pose
 
     Args:
@@ -56,6 +78,6 @@ def ikine_leg( pos ):
     beta = np.arctan2( hrd.L3 * np.sin( joint_angles[2] ), \
         hrd.L2 + hrd.L3*np.cos( joint_angles[2] ) )
 
-    joint_angles[1] = -( gamma - beta )
+    joint_angles[1] = -( gamma - beta ) # Negative causes knee-up configuration
 
     return joint_angles

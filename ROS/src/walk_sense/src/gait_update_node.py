@@ -3,12 +3,13 @@
 import copy
 import numpy as np
 import rospy
+from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TwistStamped
 
 # Custom libraries and class instances
 from classes.gait import gait
 from classes.walk_topics import walk_topics
 from functions.foot_position_to_joint_angles import *
-from walk_sense.msg import walk_twist
 
 from hardware_control.hw_topics import hw_topics # List of acceptable channel names
 from hardware_control import hardware_constants
@@ -20,9 +21,6 @@ hw_top = hw_topics()
 w_top = walk_topics()
 gt = gait()
 hrd = hardware_constants.hardware_constants()
-
-# Initialize global version of walking twist
-walk_twist_glob = walk_twist()
 
 #==============================================================================
 class gait_update_node():
@@ -42,8 +40,12 @@ class gait_update_node():
         self.up_phase_foot_start = np.zeros( (hrd.num_joints,hrd.num_legs) )
         self.distance_foot_traveled = np.zeros( hrd.num_legs )
 
+        # Input topics to this algorithm
+        self.walk_twist = TwistStamped()
+        self.body_ground_transform = TransformStamped()
+
         # Initialze foot position
-        joint_ang = foot_position_to_joint_angles( gt.foot_center )
+        joint_ang = foot_position_to_joint_angles( gt.foot_center, self.body_ground_transform )
 
         # Publish a state of each leg to its own topic
         self.lg_st_msg = []
@@ -59,15 +61,27 @@ class gait_update_node():
             self.lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
 
         # Subscribe to walk control after initializing all your stuff
-        rospy.Subscriber( w_top.walk_twist, walk_twist, self.store_new_gait_twist )
+        rospy.Subscriber( w_top.walk_twist, TwistStamped, self.get_gait_twist )
+        rospy.Subscriber( w_top.body_ground_transform, TransformStamped, self.get_body_ground_transform )
 
         # Run the publisher node to calculate joint angles
         self.update_gait()
 
     #==============================================================================
-    def store_new_gait_twist( self, walk_twist ):
-        global walk_twist_glob
-        walk_twist_glob = copy.deepcopy( walk_twist )
+    def get_gait_twist( self, walk_twist ):
+        """Grab walk_twist topic data when published, store it as a local class member
+        Args:
+            walk_twist (TwistStamped): _description_
+        """
+        self.walk_twist = copy.deepcopy( walk_twist )
+
+    #==============================================================================
+    def get_body_ground_transform( self, body_ground_transform ):
+        """Grab body_ground_transform topic data when published, store it as a local class member
+        Args:
+            body_ground_transform (TransformStamped): _description_
+        """
+        self.body_ground_transform = copy.deepcopy( body_ground_transform )
 
     #==============================================================================
     def update_gait( self ):
@@ -89,9 +103,15 @@ class gait_update_node():
             self.distance_foot_traveled = np.zeros( hrd.num_legs )
 
             # Pass that phase in to grab our desired foot positions
-            walk_twist_local = copy.deepcopy( walk_twist_glob ) # Save off local copy for safety
-            foot_pos, foot_off_ground = self.foot_trajectory_planning( walk_twist_local.walk_direction )
-            joint_ang = foot_position_to_joint_angles( foot_pos ) # Grab joint angles from foot_position
+            walk_twist_local = copy.deepcopy( self.walk_twist ) # Save off local copy for safety
+            body_ground_transform_local = copy.deepcopy( self.body_ground_transform )
+            # ToDo: temp solution to set body height
+            body_ground_transform_local.transform.translation.z = gt.body_height
+
+            foot_pos, foot_off_ground = self.foot_trajectory_planning( walk_twist_local.twist )
+            joint_ang = foot_position_to_joint_angles(
+                foot_pos,
+                body_ground_transform_local ) # Grab joint angles from foot_position
 
             # Package leg state info into message
             for leg in range( hrd.num_legs ):
@@ -121,7 +141,8 @@ class gait_update_node():
                 phase_end = phase_end - 1 # Leg 4 leg up wraps around to begin of period
 
             # Determine if this leg is up or down
-            if  (gt.phase >= gt.phase_offset[leg] and gt.phase < phase_end) or (leg == 4-1 and (gt.phase >= gt.phase_offset[leg] or gt.phase < phase_end)):
+            if  (gt.phase >= gt.phase_offset[leg] and gt.phase < phase_end) or \
+                (leg == 4-1 and (gt.phase >= gt.phase_offset[leg] or gt.phase < phase_end)):
                 # Leg up ------------------------------
                 if leg == 4-1 and gt.phase < 1/6:
                     up_phase = gt.phase * 3 + 0.5
@@ -152,7 +173,7 @@ class gait_update_node():
         # Current foot position
         p = np.array( [ self.lg_st_msg[leg].foot_position.x,
                         self.lg_st_msg[leg].foot_position.y,
-                        -gt.body_height] ) # Force foot to be at set stride height. May update later when foot sensors are implemented
+                        0] ) # Force foot to start on the ground. May update later when foot sensors are implemented
 
         # Transformation from body twist to foot twist
         T_body2foot = np.eye( 6 )
@@ -180,7 +201,7 @@ class gait_update_node():
 
         new_foot_pos = [ np.interp( up_phase, [0,1.0], [self.up_phase_foot_start[0,leg], gt.foot_center[0,leg]] ),
                          np.interp( up_phase, [0,1.0], [self.up_phase_foot_start[1,leg], gt.foot_center[1,leg]] ),
-                         -gt.body_height + ( gt.body_height + gt.foot_height ) * np.sin( np.pi * up_phase ) ]
+                         gt.foot_height * np.sin( np.pi * up_phase ) ]
 
         return new_foot_pos
 

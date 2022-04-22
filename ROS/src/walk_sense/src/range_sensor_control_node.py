@@ -48,6 +48,7 @@ class range_sensor_control_node():
                 # Ping for range measurement, publish data
                 range, returned = self.sonic.get_distance()
 
+                self.range_sensor.header.stamp = rospy.Time.now()
                 self.range_sensor.range = range
 
                 self.pub.publish( self.range_sensor )

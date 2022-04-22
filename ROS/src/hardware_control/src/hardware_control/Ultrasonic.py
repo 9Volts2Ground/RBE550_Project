@@ -81,6 +81,7 @@ class Ultrasonic:
             finish_time, stopped = self.echo_return_time( False, self.four_meter_time )
 
             range = ( finish_time - start_time ) * self.half_sonic_speed + self.calibrated_offset
+
             return range, returned
 
         else:

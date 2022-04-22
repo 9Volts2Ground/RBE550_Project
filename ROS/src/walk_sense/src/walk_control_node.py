@@ -4,12 +4,12 @@ import copy
 import rospy
 import numpy as np
 import time
+from geometry_msgs.msg import TwistStamped
 
 from classes import walk_topics
 from hardware_control.hw_topics import hw_topics
 from hardware_control.msg import seeker_states
 from sensor_msgs.msg import Range # Standard ROS message type
-from walk_sense.msg import walk_twist
 from walk_sense.msg import target_states
 from walk_sense.msg import target_track
 
@@ -24,6 +24,7 @@ class walk_control_node():
         # Initialize topic data to work with
         self.target_states = target_states()
         self.range_sensor = Range()
+        self.range_sensor.range = -np.inf
         self.seeker_states = seeker_states()
 
         #----------------------------------
@@ -50,7 +51,7 @@ class walk_control_node():
         rospy.Subscriber( w_top.target_states, target_states, self.grab_target_states )
         rospy.Subscriber( w_top.range_sensor, Range, self.grab_range_states )
         rospy.Subscriber( hw_top.seeker_states, seeker_states, self.grab_seeker_states )
-        self.pub = rospy.Publisher( w_top.walk_twist, walk_twist, queue_size = 1 )
+        self.pub = rospy.Publisher( w_top.walk_twist, TwistStamped, queue_size = 1 )
         self.pub_track = rospy.Publisher( w_top.target_track, target_track, queue_size = 1 )
 
         self.walk_control_node()
@@ -78,6 +79,7 @@ class walk_control_node():
                 if range_sensor.range <= self.target_acquire_distance and range_sensor.range >= range_sensor.min_range:
                     # If we get close enough, stop moving
                     self.target_search_mode = self.target_search_mode_options[3]
+                    print(f"Moving to {self.target_search_mode} mode. Range = {range_sensor.range}")
             elif self.previous_target_search_mode == self.target_search_mode_options[1]:
                 # First frame target lost
                 self.target_search_mode = self.target_search_mode_options[2]
@@ -125,7 +127,7 @@ class walk_control_node():
         Spin the robot until it finds the target
         """
         twist = self.init_twist()
-        twist.walk_direction.angular.z = self.max_velocity / self.angular_moment * self.target_az_side
+        twist.twist.angular.z = self.max_velocity / self.angular_moment * self.target_az_side
         return twist
 
     #======================================================
@@ -135,7 +137,7 @@ class walk_control_node():
         '''
         twist = self.init_twist()
 
-        twist.walk_direction.linear.y = self.max_velocity # Command it to walk forward towards the target
+        twist.twist.linear.y = self.max_velocity # Command it to walk forward towards the target
 
         # Spin until we center the target in frame
         half_image_width = target_state.camera_width / 2
@@ -146,11 +148,11 @@ class walk_control_node():
 
         # If target is not centered in frame, add some spin to the gait
         if abs( self.azimuth_position ) > self.target_centered_tolerance:
-            twist.walk_direction.angular.z += self.azimuth_position * self.spin_gain
+            twist.twist.angular.z += self.azimuth_position * self.spin_gain
 
         # If the seeker isn't pointing straight forward, spin to try and center the seeker
         if abs( self.seeker_states.joint_angle.position[0] ) > self.seeker_turned_tolerance:
-            twist.walk_direction.angular.z += self.seeker_states.joint_angle.position[0] * self.seeker_az_gain
+            twist.twist.angular.z += self.seeker_states.joint_angle.position[0] * self.seeker_az_gain
 
         twist = self.scale_twist( twist )
 
@@ -162,8 +164,8 @@ class walk_control_node():
         Move in the same direction you last saw the target
         '''
         twist = self.init_twist()
-        twist.walk_direction.linear.y = self.max_velocity # Command it to walk forward, hoping the target is still there
-        twist.walk_direction.angular.z = -0.2 * self.target_az_side # rad/s
+        twist.twist.linear.y = self.max_velocity # Command it to walk forward, hoping the target is still there
+        twist.twist.angular.z = -0.2 * self.target_az_side # rad/s
         twist = self.scale_twist( twist )
         return twist
 
@@ -200,20 +202,20 @@ class walk_control_node():
         '''
         Makes sure the twist magnitude is not too large
         '''
-        linear_velocity_mag = np.linalg.norm( [ twist.walk_direction.linear.x,
-                                                twist.walk_direction.linear.y,
-                                                twist.walk_direction.linear.z] )
-        angular_velocity_mag = np.linalg.norm( [twist.walk_direction.angular.x,
-                                                twist.walk_direction.angular.y,
-                                                twist.walk_direction.angular.z] ) * self.angular_moment
+        linear_velocity_mag = np.linalg.norm( [ twist.twist.linear.x,
+                                                twist.twist.linear.y,
+                                                twist.twist.linear.z] )
+        angular_velocity_mag = np.linalg.norm( [twist.twist.angular.x,
+                                                twist.twist.angular.y,
+                                                twist.twist.angular.z] ) * self.angular_moment
         scaled_velocity_mag = self.max_velocity / ( linear_velocity_mag + angular_velocity_mag )
 
-        twist.walk_direction.linear.x *= scaled_velocity_mag
-        twist.walk_direction.linear.y *= scaled_velocity_mag
-        twist.walk_direction.linear.z *= scaled_velocity_mag
-        twist.walk_direction.angular.x *= scaled_velocity_mag
-        twist.walk_direction.angular.y *= scaled_velocity_mag
-        twist.walk_direction.angular.z *= scaled_velocity_mag
+        twist.twist.linear.x *= scaled_velocity_mag
+        twist.twist.linear.y *= scaled_velocity_mag
+        twist.twist.linear.z *= scaled_velocity_mag
+        twist.twist.angular.x *= scaled_velocity_mag
+        twist.twist.angular.y *= scaled_velocity_mag
+        twist.twist.angular.z *= scaled_velocity_mag
 
         return twist
 
@@ -222,14 +224,14 @@ class walk_control_node():
         '''
         Initialize twist vector
         '''
-        twist = walk_twist()
+        twist = TwistStamped()
         twist.header.stamp = rospy.Time.now()
-        twist.walk_direction.linear.x = 0.0
-        twist.walk_direction.linear.y = 0.0
-        twist.walk_direction.linear.z = 0.0
-        twist.walk_direction.angular.x = 0.0
-        twist.walk_direction.angular.y = 0.0
-        twist.walk_direction.angular.z = 0.0
+        twist.twist.linear.x = 0.0
+        twist.twist.linear.y = 0.0
+        twist.twist.linear.z = 0.0
+        twist.twist.angular.x = 0.0
+        twist.twist.angular.y = 0.0
+        twist.twist.angular.z = 0.0
         return twist
 
 #==============================================================================
