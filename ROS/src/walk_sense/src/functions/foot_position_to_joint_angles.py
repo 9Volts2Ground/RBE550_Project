@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
+from tf.transformations import quaternion_matrix
 
 # Custom libraries
 from hardware_control import hardware_constants
@@ -22,8 +23,13 @@ def foot_position_to_joint_angles( foot_position_g, body_ground_transform ):
 
     # Grab transformation matrix between body_ground and body frames
     # ToDo: fill this in, euler -> R calculation
-    Tbg = np.identity( 4 )
-    Tbg[2,3] = -body_ground_transform.transform.translation.z # Mind your negatives
+    Tbg = quaternion_matrix( [ body_ground_transform.transform.rotation.w,
+                               body_ground_transform.transform.rotation.x,
+                               body_ground_transform.transform.rotation.y,
+                               body_ground_transform.transform.rotation.z ] )
+    Tbg[0:3,3] = -np.array( [ body_ground_transform.transform.translation.x,
+                              body_ground_transform.transform.translation.y,
+                              body_ground_transform.transform.translation.z ] ) # Mind your negatives
 
     # Grab joint angles from foot_position_g
     joint_angles = np.zeros( shape=(3,6) ) # Initialize array
