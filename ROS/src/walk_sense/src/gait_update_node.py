@@ -105,8 +105,6 @@ class gait_update_node():
             # Pass that phase in to grab our desired foot positions
             walk_twist_local = copy.deepcopy( self.walk_twist ) # Save off local copy for safety
             body_ground_transform_local = copy.deepcopy( self.body_ground_transform )
-            # ToDo: temp solution to set body height
-            body_ground_transform_local.transform.translation.z = gt.body_height
 
             foot_pos, foot_off_ground = self.foot_trajectory_planning( walk_twist_local.twist )
             joint_ang = foot_position_to_joint_angles(

@@ -52,7 +52,7 @@ class pose_control_node():
             self.pub.publish( self.pose )
             rate.sleep()
 
-        while not rospy.is_shutdown() and self.pose.transform.translation.x < 0.025:
+        while not rospy.is_shutdown() and self.pose.transform.translation.x < 0.04:
             # Shift the robot forward
             # Move the robot vertically
             self.pose.header.stamp = rospy.Time.now()
