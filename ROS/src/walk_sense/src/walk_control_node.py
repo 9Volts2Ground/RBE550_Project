@@ -36,7 +36,7 @@ class walk_control_node():
         self.elevation_position = 0.0
         self.target_lost_time = time.time()
         self.target_lost_timeout = 2.0
-        self.target_acquire_distance = 1 # meters
+        self.target_acquire_distance = 0.5 # meters
 
         # Other logic variables
         self.angular_moment = 0.05 # Approximate distance from body to foot
