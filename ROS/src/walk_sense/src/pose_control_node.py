@@ -34,7 +34,7 @@ class pose_control_node():
         self.pose.transform.translation.y = 0.0
         self.pose.transform.translation.z = 0.0
 
-        desired_speed = .005 # m/s
+        desired_speed = .01 # m/s
         dx = desired_speed / loop_hz
 
         t = time.time()
@@ -55,7 +55,39 @@ class pose_control_node():
             self.pub.publish( self.pose )
             rate.sleep()
 
-        while not rospy.is_shutdown() and self.pose.transform.translation.y < 0.04:
+        while not rospy.is_shutdown() and self.pose.transform.translation.y < 0.03:
+
+            t = time.time()
+            dt = t - t_prev
+            t_prev = t
+
+            # Shift the robot forward
+            # Move the robot vertically
+            self.pose.header.stamp = rospy.Time.now()
+            self.pose.transform.translation.y += desired_speed * dt
+
+            print(f"y = {self.pose.transform.translation.y}")
+
+            self.pub.publish( self.pose )
+            rate.sleep()
+
+        while not rospy.is_shutdown() and self.pose.transform.translation.y < -0.03:
+
+            t = time.time()
+            dt = t - t_prev
+            t_prev = t
+
+            # Shift the robot forward
+            # Move the robot vertically
+            self.pose.header.stamp = rospy.Time.now()
+            self.pose.transform.translation.y -= desired_speed * dt
+
+            print(f"y = {self.pose.transform.translation.y}")
+
+            self.pub.publish( self.pose )
+            rate.sleep()
+
+        while not rospy.is_shutdown() and abs( self.pose.transform.translation.y ) > 0.002:
 
             t = time.time()
             dt = t - t_prev
