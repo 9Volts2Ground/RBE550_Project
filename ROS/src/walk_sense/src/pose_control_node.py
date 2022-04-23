@@ -71,7 +71,7 @@ class pose_control_node():
             self.pub.publish( self.pose )
             rate.sleep()
 
-        while not rospy.is_shutdown() and self.pose.transform.translation.y < -0.03:
+        while not rospy.is_shutdown() and self.pose.transform.translation.y > -0.03:
 
             t = time.time()
             dt = t - t_prev
