@@ -18,29 +18,58 @@ class pose_control_node():
 
         self.pose = TransformStamped()
 
+        self.loop_hz = 10
+        self.rate = rospy.Rate( self.loop_hz )
+
         self.pub = rospy.Publisher( w_top.body_ground_transform, TransformStamped, queue_size=1 )
 
-        self.pose_control()
+        self.stand_up()
 
     #======================================================
-    def pose_control( self ):
-
-        loop_hz = 5
-        rate = rospy.Rate( loop_hz )
+    def stand_up( self ):
 
         # Initialize the robot to start on the ground
         self.pose.header.stamp = rospy.Time.now()
         self.pose.transform.translation.x = 0.0
         self.pose.transform.translation.y = 0.0
-        # self.pose.transform.translation.z = 0.0
+        self.pose.transform.translation.z = 0.0
 
+        desired_speed = 0.01 # m/s
 
-        self.pose.transform.translation.z = gt.body_height
-        self.pub.publish( self.pose )
+        t = time.time()
+        t_prev = t
 
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown() and self.pose.transform.translation.z < gt.body_height:
+            t = time.time()
+            dt = t - t_prev
+            t_prev = t
+
+            # Move the robot vertically
+            self.pose.header.stamp = rospy.Time.now()
+            self.pose.transform.translation.z += desired_speed * dt
+
+            print(f"z = {self.pose.transform.translation.z}")
+
             self.pub.publish( self.pose )
-            rate.sleep()
+            self.rate.sleep()
+
+
+    # #======================================================
+    # def pose_control( self ):
+
+    #     # Initialize the robot to start on the ground
+    #     self.pose.header.stamp = rospy.Time.now()
+    #     self.pose.transform.translation.x = 0.0
+    #     self.pose.transform.translation.y = 0.0
+    #     # self.pose.transform.translation.z = 0.0
+
+
+    #     self.pose.transform.translation.z = gt.body_height
+    #     self.pub.publish( self.pose )
+
+    #     while not rospy.is_shutdown():
+    #         self.pub.publish( self.pose )
+    #         self.rate.sleep()
 
 
         # desired_speed = .01 # m/s
