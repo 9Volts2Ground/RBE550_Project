@@ -30,6 +30,7 @@ class color():
 # define the color ranges
 green = color( low = np.array([29, 86, 20]), high = np.array([64, 255, 255]), color='green' )
 blue = color( low = np.array([60, 100, 40]), high=np.array([150, 255, 255]), color='blue')
+red = color( low=np.array([160, 100, 50]), high=np.array([180, 255, 255]), color='red')
 
 #==============================================================================
 class camera_image_target_processing():
@@ -52,7 +53,8 @@ class camera_image_target_processing():
     #==========================================================================
     def process_image(self, image_topic):
 
-        color = blue
+        # color = blue
+        color = red
 
         # Convert camera data to a cv2 object
         frame = self.br.imgmsg_to_cv2( image_topic )

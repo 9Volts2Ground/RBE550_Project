@@ -34,7 +34,7 @@ class pose_control_node():
         self.pose.transform.translation.y = 0.0
         self.pose.transform.translation.z = 0.0
 
-        desired_speed = 0.01 # m/s
+        desired_speed = 0.05 # m/s
 
         t = time.time()
         t_prev = t
@@ -48,7 +48,7 @@ class pose_control_node():
             self.pose.header.stamp = rospy.Time.now()
             self.pose.transform.translation.z += desired_speed * dt
 
-            print(f"z = {self.pose.transform.translation.z}")
+            # print(f"z = {self.pose.transform.translation.z}")
 
             self.pub.publish( self.pose )
             self.rate.sleep()
