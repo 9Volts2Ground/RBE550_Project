@@ -40,12 +40,12 @@ class walk_control_node():
 
         # Other logic variables
         self.angular_moment = 0.05 # Approximate distance from body to foot
-        self.max_velocity = 0.025 # m/s
+        self.max_velocity = 0.03 # m/s
         self.target_centered_tolerance = 0.1 # Acceptable distance from center of image
         self.seeker_turned_tolerance = 0.26 # ~15 degrees off center threshold to add spin to the robot
-        self.seeker_az_gain = 0.1
+        self.seeker_az_gain = 0.05
         self.target_az_side = 1 # >0 = left, <0 = right
-        self.spin_gain = 0.25 # Scales error relative to image position into angular velocity
+        self.spin_gain = 0.1 # Scales error relative to image position into angular velocity
 
         # Turn on publisher and subscribers
         rospy.Subscriber( w_top.target_states, target_states, self.grab_target_states )
@@ -124,10 +124,12 @@ class walk_control_node():
     #======================================================
     def target_search_logic( self ):
         """
-        Spin the robot until it finds the target
+        Spin the robot until it finds the target.
+        Start spinning counter-clockwise (+z), until we have lost a target,
+        then spin the direction we last saw a target
         """
         twist = self.init_twist()
-        twist.twist.angular.z = self.max_velocity / self.angular_moment * self.target_az_side
+        twist.twist.angular.z = self.max_velocity / self.angular_moment * self.target_az_side # target_az_side sets direction (+/-z)
         return twist
 
     #======================================================
