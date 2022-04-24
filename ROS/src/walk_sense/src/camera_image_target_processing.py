@@ -53,8 +53,8 @@ class camera_image_target_processing():
     #==========================================================================
     def process_image(self, image_topic):
 
-        # color = blue
-        color = red
+        color = blue
+        # color = red
 
         # Convert camera data to a cv2 object
         frame = self.br.imgmsg_to_cv2( image_topic )

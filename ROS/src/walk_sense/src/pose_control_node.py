@@ -25,6 +25,8 @@ class pose_control_node():
 
         self.stand_up()
 
+        self.stay_standing()
+
     #======================================================
     def stand_up( self ):
 
@@ -53,6 +55,24 @@ class pose_control_node():
             self.pub.publish( self.pose )
             self.rate.sleep()
 
+    #======================================================
+    def stay_standing( self ):
+        # Initialize the robot to start on the ground
+        self.pose.header.stamp = rospy.Time.now()
+        self.pose.transform.translation.x = 0.0
+        self.pose.transform.translation.y = 0.0
+        self.pose.transform.translation.z = 0.0
+
+        self.pose.transform.rotation.w = 0.0
+        self.pose.transform.rotation.x = 0.0
+        self.pose.transform.rotation.y = 0.0
+        self.pose.transform.rotation.z = 0.0
+
+        while not rospy.is_shutdown() and self.pose.transform.translation.z < gt.body_height:
+            self.pose.header.stamp = rospy.Time.now()
+
+            self.pub.publish( self.pose )
+            self.rate.sleep()
 
     # #======================================================
     # def pose_control( self ):
