@@ -79,7 +79,7 @@ class walk_control_node():
                 if range_sensor.range <= self.target_acquire_distance and range_sensor.range >= range_sensor.min_range:
                     # If we get close enough, stop moving
                     self.target_search_mode = self.target_search_mode_options[3]
-                    print(f"Moving to {self.target_search_mode} mode. Range = {range_sensor.range}")
+                    # print(f"Moving to {self.target_search_mode} mode. Range = {range_sensor.range}")
             elif self.previous_target_search_mode == self.target_search_mode_options[1]:
                 # First frame target lost
                 self.target_search_mode = self.target_search_mode_options[2]
@@ -92,6 +92,8 @@ class walk_control_node():
             else:
                 # Maintain current state
                 self.target_search_mode = self.previous_target_search_mode
+
+            print(f"Moving to {self.target_search_mode} mode. Range = {range_sensor.range}")
 
             #------------------------------------------------------------------------
             # Do state logic
