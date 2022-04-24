@@ -40,12 +40,12 @@ class walk_control_node():
 
         # Other logic variables
         self.angular_moment = 0.05 # Approximate distance from body to foot
-        self.max_velocity = 0.03 # m/s
+        self.max_velocity = 0.04 # m/s
         self.target_centered_tolerance = 0.1 # Acceptable distance from center of image
-        self.seeker_turned_tolerance = 0.26 # ~15 degrees off center threshold to add spin to the robot
-        self.seeker_az_gain = 0.05
+        self.seeker_turned_tolerance = 0.436 # ~25 degrees off center threshold to add spin to the robot
+        self.seeker_az_gain = 0.01
         self.target_az_side = 1 # >0 = left, <0 = right
-        self.spin_gain = 0.1 # Scales error relative to image position into angular velocity
+        self.spin_gain = 0.05 # Scales error relative to image position into angular velocity
 
         # Turn on publisher and subscribers
         rospy.Subscriber( w_top.target_states, target_states, self.grab_target_states )
