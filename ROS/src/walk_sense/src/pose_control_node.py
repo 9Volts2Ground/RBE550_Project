@@ -66,7 +66,7 @@ class pose_control_node():
         self.pose.transform.rotation.w = 0.0
         self.pose.transform.rotation.x = 0.0
         self.pose.transform.rotation.y = 0.0
-        self.pose.transform.rotation.z = 0.0
+        self.pose.transform.rotation.z = gt.body_height
 
         while not rospy.is_shutdown() and self.pose.transform.translation.z < gt.body_height:
             self.pose.header.stamp = rospy.Time.now()
