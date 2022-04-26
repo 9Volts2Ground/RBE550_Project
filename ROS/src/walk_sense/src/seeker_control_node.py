@@ -35,6 +35,8 @@ class seeker_control_node():
 
         # Turn on publisher and subscribers
         self.pub = rospy.Publisher( hw_top.seeker_states, seeker_states, queue_size = 1 )
+        self.pub( self.skr_state ) # Initialize some states to grab
+
         rospy.Subscriber( w_top.target_track, target_track, self.seeker_control )
 
     #================================================================
@@ -56,9 +58,8 @@ class seeker_control_node():
                 # Make sure seeker angles stay within bounds
                 self.skr_state.joint_angle.position[1] = np.max( [ np.min( [self.skr_state.joint_angle.position[1], self.seeker_max[1] ] ), self.seeker_min[1] ] )
 
-
-        self.skr_state.header.stamp = rospy.Time.now()
-        self.pub.publish( self.skr_state )
+            self.skr_state.header.stamp = rospy.Time.now()
+            self.pub.publish( self.skr_state )
 
 #==============================================================================
 if __name__ == "__main__":

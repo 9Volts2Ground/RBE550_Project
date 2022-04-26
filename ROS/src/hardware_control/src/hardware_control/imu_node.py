@@ -60,7 +60,7 @@ class IMU_hardware:
 def imu_node():
     rospy.init_node( "imu_node", anonymous=True )
 
-    pub = rospy.Publisher( hw_top.imu_data, Imu, queue_size=10 )
+    pub = rospy.Publisher( hw_top.imu_data, Imu, queue_size=1 )
 
     rate = rospy.Rate( 100 ) # Hz, double check hardware spec
 

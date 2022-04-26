@@ -86,7 +86,7 @@ class gait_update_node():
     #==============================================================================
     def update_gait( self ):
 
-        rate = rospy.Rate( 50 )
+        rate = rospy.Rate( 25 )
 
         while not rospy.is_shutdown():
 
@@ -171,7 +171,7 @@ class gait_update_node():
         # Current foot position
         p = np.array( [ self.lg_st_msg[leg].foot_position.x,
                         self.lg_st_msg[leg].foot_position.y,
-                        0] ) # Force foot to start on the ground. May update later when foot sensors are implemented
+                        0 ] ) # Force foot to start on the ground. May update later when foot sensors are implemented
 
         # Transformation from body twist to foot twist
         T_body2foot = np.eye( 6 )

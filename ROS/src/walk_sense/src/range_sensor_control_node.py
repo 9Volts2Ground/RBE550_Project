@@ -37,7 +37,7 @@ class range_sensor_control_node():
 
     #======================================================
     def range_sensor_control(self):
-        rate = rospy.Rate( 10 )
+        rate = rospy.Rate( 2 )
 
         print("Range sensor loop...")
 

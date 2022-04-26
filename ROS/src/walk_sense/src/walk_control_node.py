@@ -24,8 +24,9 @@ class walk_control_node():
         # Initialize topic data to work with
         self.target_states = target_states()
         self.range_sensor = Range()
-        self.range_sensor.range = -np.inf
+        self.range_sensor.range = -np.inf # Init to no return
         self.seeker_states = seeker_states()
+        self.seeker_states.joint_angle.position = [0.0, 0.0]
 
         #----------------------------------
         # Define local variables. Detection states
@@ -41,7 +42,7 @@ class walk_control_node():
         # Other logic variables
         self.angular_moment = 0.05 # Approximate distance from body to foot
         self.max_velocity = 0.04 # m/s
-        self.target_centered_tolerance = 0.1 # Acceptable distance from center of image
+        self.target_centered_tolerance = 0.1 # Acceptable distance from center of image, % of frame
         self.seeker_turned_tolerance = 0.436 # ~25 degrees off center threshold to add spin to the robot
         self.seeker_az_gain = 0.01
         self.target_az_side = 1 # >0 = left, <0 = right
@@ -58,7 +59,7 @@ class walk_control_node():
 
     #======================================================
     def walk_control_node( self ):
-        rate = rospy.Rate( 10 )
+        rate = rospy.Rate( 5 )
 
         print("Entering walking while loop...")
 
@@ -79,7 +80,6 @@ class walk_control_node():
                 if range_sensor.range <= self.target_acquire_distance and range_sensor.range >= range_sensor.min_range:
                     # If we get close enough, stop moving
                     self.target_search_mode = self.target_search_mode_options[3]
-                    # print(f"Moving to {self.target_search_mode} mode. Range = {range_sensor.range}")
             elif self.previous_target_search_mode == self.target_search_mode_options[1]:
                 # First frame target lost
                 self.target_search_mode = self.target_search_mode_options[2]
@@ -106,9 +106,6 @@ class walk_control_node():
             else: # Target already acquired
                 twist = self.target_found_logic()
 
-            # Package target search mode history again
-            self.previous_target_search_mode = self.target_search_mode
-
             # Send out the commanded twist
             self.pub.publish( twist )
 
@@ -120,6 +117,9 @@ class walk_control_node():
             track.tgt_pos_in_frame.x = self.azimuth_position
             track.tgt_pos_in_frame.y = self.elevation_position
             self.pub_track.publish( track )
+
+            # Package target search mode history again
+            self.previous_target_search_mode = self.target_search_mode
 
             rate.sleep()
 

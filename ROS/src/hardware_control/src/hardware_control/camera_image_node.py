@@ -29,10 +29,10 @@ def camera_image_node():
     rospy.init_node('camera_image_node', anonymous=True)
 
     # Node is publishing to the video_frames topic using the message type Image
-    pub = rospy.Publisher(top.camera_image, Image, queue_size=10)
+    pub = rospy.Publisher( top.camera_image, Image, queue_size=1 )
 
     # Control max rate of image capture, Hz
-    frame_rate = 10 # Hz
+    frame_rate = 2 # Hz
     rate = rospy.Rate( frame_rate )
 
     # Create object to capture image

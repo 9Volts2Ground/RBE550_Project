@@ -18,7 +18,7 @@ class pose_control_node():
 
         self.pose = TransformStamped()
 
-        self.loop_hz = 10
+        self.loop_hz = 2
         self.rate = rospy.Rate( self.loop_hz )
 
         self.pub = rospy.Publisher( w_top.body_ground_transform, TransformStamped, queue_size=1 )

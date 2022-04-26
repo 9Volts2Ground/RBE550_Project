@@ -26,7 +26,6 @@ class color():
         self.low = low
         self.color = color
 
-
 # define the color ranges
 green = color( low = np.array([29, 86, 20]), high = np.array([64, 255, 255]), color='green' )
 blue = color( low = np.array([60, 100, 40]), high=np.array([150, 255, 255]), color='blue')
@@ -35,20 +34,18 @@ red = color( low=np.array([160, 100, 50]), high=np.array([180, 255, 255]), color
 #==============================================================================
 class camera_image_target_processing():
     def __init__(self):
-
         # Initialize ROS communication
         rospy.init_node( "camera_image_target_processing", anonymous=True)
 
         # Set up publishers
-        self.pub = rospy.Publisher( w_top.target_states, target_states, queue_size = 10 )
-        self.image_pub = rospy.Publisher( w_top.processed_image, Image, queue_size = 10 )
+        self.pub = rospy.Publisher( w_top.target_states, target_states, queue_size = 1 )
+        self.image_pub = rospy.Publisher( w_top.processed_image, Image, queue_size = 1 )
 
         # Initialize class to convert between ROS image topic and cv2
         self.br = CvBridge()
         self.image_encoding = "bgr8"
 
         rospy.Subscriber(hw_top.camera_image, Image, self.process_image)
-
 
     #==========================================================================
     def process_image(self, image_topic):
