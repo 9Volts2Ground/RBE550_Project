@@ -7,11 +7,13 @@ from sensor_msgs.msg import Image # Image is the message type
 
 # Custom libraries
 from classes import walk_topics
+from hardware_control import hardware_constants
 from hardware_control.hw_topics import hw_topics # List of acceptable channel names
 from walk_sense.msg import target_states
 
 #----------------------------------------
 # Set global flags and class instances
+hrd = hardware_constants.hardware_constants()
 hw_top = hw_topics()
 w_top = walk_topics.walk_topics()
 
@@ -102,13 +104,14 @@ class camera_image_target_processing():
         self.pub.publish( tgt_state )
 
         # Publish processed image so we can scope it using other ROS tools
-        ( rows, cols, channels ) = frame.shape
-        image_message = self.br.cv2_to_imgmsg( frame, encoding=self.image_encoding )
-        image_message.header.stamp = rospy.Time.now()
-        image_message.encoding = self.image_encoding
-        image_message.height = rows # Include size of the image
-        image_message.width = cols
-        self.image_pub.publish( image_message )
+        if not hrd.wanda:
+            ( rows, cols, channels ) = frame.shape
+            image_message = self.br.cv2_to_imgmsg( frame, encoding=self.image_encoding )
+            image_message.header.stamp = rospy.Time.now()
+            image_message.encoding = self.image_encoding
+            image_message.height = rows # Include size of the image
+            image_message.width = cols
+            self.image_pub.publish( image_message )
 
 
 #==============================================================================
