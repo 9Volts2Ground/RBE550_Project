@@ -35,7 +35,7 @@ class seeker_control_node():
 
         # Turn on publisher and subscribers
         self.pub = rospy.Publisher( hw_top.seeker_states, seeker_states, queue_size = 1 )
-        self.pub( self.skr_state ) # Initialize some states to grab
+        self.pub.publish( self.skr_state ) # Initialize some states to grab
 
         rospy.Subscriber( w_top.target_track, target_track, self.seeker_control )
 
