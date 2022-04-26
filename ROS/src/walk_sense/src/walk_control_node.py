@@ -41,7 +41,7 @@ class walk_control_node():
 
         # Other logic variables
         self.angular_moment = 0.05 # Approximate distance from body to foot
-        self.max_velocity = 0.04 # m/s
+        self.max_velocity = 0.025 # m/s
         self.target_centered_tolerance = 0.1 # Acceptable distance from center of image, % of frame
         self.seeker_turned_tolerance = 0.436 # ~25 degrees off center threshold to add spin to the robot
         self.seeker_az_gain = 0.01
