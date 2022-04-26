@@ -40,7 +40,7 @@ class walk_control_node():
         self.target_acquire_distance = 0.5 # meters
 
         # Other logic variables
-        self.angular_moment = 0.10 # Approximate distance from body to foot
+        self.angular_moment = 0.15 # Approximate distance from body to foot
         self.max_velocity = 0.03 # m/s
         self.target_centered_tolerance = 0.1 # Acceptable distance from center of image, % of frame
         self.seeker_turned_tolerance = 0.436 # ~25 degrees off center threshold to add spin to the robot
@@ -169,7 +169,7 @@ class walk_control_node():
         '''
         twist = self.init_twist()
         twist.twist.linear.y = self.max_velocity # Command it to walk forward, hoping the target is still there
-        twist.twist.angular.z = -0.2 * self.target_az_side # rad/s
+        twist.twist.angular.z = 0.2 * self.target_az_side # rad/s
         twist = self.scale_twist( twist )
         return twist
 
