@@ -11,24 +11,18 @@
         type="camera_image_node.py"
         output="screen"
     />
-    <!-- <node
-        pkg="hardware_control"
-        name="led_control_node"
-        type="led_control_node.py"
-        output="screen"
-    /> -->
     <node
         pkg="walk_sense"
         name="walk_control_node"
         type="walk_control_node.py"
         output="screen"
     />
-    <node
+    <!-- <node
         pkg="walk_sense"
         name="seeker_control_node"
         type="seeker_control_node.py"
         output="screen"
-    />
+    /> -->
     <node
         pkg="walk_sense"
         name="gait_update_node"
