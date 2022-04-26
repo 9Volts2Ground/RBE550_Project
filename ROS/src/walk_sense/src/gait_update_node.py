@@ -86,7 +86,7 @@ class gait_update_node():
     #==============================================================================
     def update_gait( self ):
 
-        rate = rospy.Rate( 25 )
+        rate = rospy.Rate( 20 )
 
         while not rospy.is_shutdown():
 

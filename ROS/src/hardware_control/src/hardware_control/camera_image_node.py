@@ -32,7 +32,7 @@ def camera_image_node():
     pub = rospy.Publisher( top.camera_image, Image, queue_size=1 )
 
     # Control max rate of image capture, Hz
-    frame_rate = 2 # Hz
+    frame_rate = 4 # Hz
     rate = rospy.Rate( frame_rate )
 
     # Create object to capture image
