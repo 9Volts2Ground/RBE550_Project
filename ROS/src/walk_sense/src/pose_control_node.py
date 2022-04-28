@@ -18,14 +18,15 @@ class pose_control_node():
 
         self.pose = TransformStamped()
 
-        self.loop_hz = 2
+        self.loop_hz = 1
         self.rate = rospy.Rate( self.loop_hz )
 
         self.pub = rospy.Publisher( w_top.body_ground_transform, TransformStamped, queue_size=1 )
 
         self.stand_up()
-
         self.stay_standing()
+
+        # self.pose_control()
 
     #======================================================
     def stand_up( self ):
@@ -75,91 +76,64 @@ class pose_control_node():
             self.rate.sleep()
 
     # #======================================================
-    # def pose_control( self ):
+    def pose_control( self ):
 
-    #     # Initialize the robot to start on the ground
-    #     self.pose.header.stamp = rospy.Time.now()
-    #     self.pose.transform.translation.x = 0.0
-    #     self.pose.transform.translation.y = 0.0
-    #     # self.pose.transform.translation.z = 0.0
+        self.stand_up()
 
+        desired_speed = .01 # m/s
 
-    #     self.pose.transform.translation.z = gt.body_height
-    #     self.pub.publish( self.pose )
+        t = time.time()
+        t_prev = t
 
-    #     while not rospy.is_shutdown():
-    #         self.pub.publish( self.pose )
-    #         self.rate.sleep()
+        while not rospy.is_shutdown() and self.pose.transform.translation.y < 0.035:
 
+            t = time.time()
+            dt = t - t_prev
+            t_prev = t
 
-        # desired_speed = .01 # m/s
-        # dx = desired_speed / loop_hz
+            # Shift the robot forward
+            # Move the robot vertically
+            self.pose.header.stamp = rospy.Time.now()
+            self.pose.transform.translation.y += desired_speed * dt
 
-        # t = time.time()
-        # t_prev = t
+            print(f"y = {self.pose.transform.translation.y}")
 
-        # while not rospy.is_shutdown() and self.pose.transform.translation.z < gt.body_height:
+            self.pub.publish( self.pose )
+            self.rate.sleep()
 
-        #     t = time.time()
-        #     dt = t - t_prev
-        #     t_prev = t
+        desired_speed = 0.03
 
-        #     # Move the robot vertically
-        #     self.pose.header.stamp = rospy.Time.now()
-        #     self.pose.transform.translation.z += desired_speed * dt
+        while not rospy.is_shutdown() and self.pose.transform.translation.y > -0.035:
 
-        #     print(f"z = {self.pose.transform.translation.z}")
+            t = time.time()
+            dt = t - t_prev
+            t_prev = t
 
-        #     self.pub.publish( self.pose )
-        #     rate.sleep()
+            # Shift the robot forward
+            # Move the robot vertically
+            self.pose.header.stamp = rospy.Time.now()
+            self.pose.transform.translation.y -= desired_speed * dt
 
-        # while not rospy.is_shutdown() and self.pose.transform.translation.y < 0.03:
+            print(f"y = {self.pose.transform.translation.y}")
 
-        #     t = time.time()
-        #     dt = t - t_prev
-        #     t_prev = t
+            self.pub.publish( self.pose )
+            self.rate.sleep()
 
-        #     # Shift the robot forward
-        #     # Move the robot vertically
-        #     self.pose.header.stamp = rospy.Time.now()
-        #     self.pose.transform.translation.y += desired_speed * dt
+        while not rospy.is_shutdown() and abs( self.pose.transform.translation.y ) > 0.002:
 
-        #     print(f"y = {self.pose.transform.translation.y}")
+            t = time.time()
+            dt = t - t_prev
+            t_prev = t
 
-        #     self.pub.publish( self.pose )
-        #     rate.sleep()
+            # Shift the robot forward
+            # Move the robot vertically
+            self.pose.header.stamp = rospy.Time.now()
+            self.pose.transform.translation.y += desired_speed * dt
 
-        # while not rospy.is_shutdown() and self.pose.transform.translation.y > -0.03:
+            print(f"y = {self.pose.transform.translation.y}")
 
-        #     t = time.time()
-        #     dt = t - t_prev
-        #     t_prev = t
-
-        #     # Shift the robot forward
-        #     # Move the robot vertically
-        #     self.pose.header.stamp = rospy.Time.now()
-        #     self.pose.transform.translation.y -= desired_speed * dt
-
-        #     print(f"y = {self.pose.transform.translation.y}")
-
-        #     self.pub.publish( self.pose )
-        #     rate.sleep()
-
-        # while not rospy.is_shutdown() and abs( self.pose.transform.translation.y ) > 0.002:
-
-        #     t = time.time()
-        #     dt = t - t_prev
-        #     t_prev = t
-
-        #     # Shift the robot forward
-        #     # Move the robot vertically
-        #     self.pose.header.stamp = rospy.Time.now()
-        #     self.pose.transform.translation.y += desired_speed * dt
-
-        #     print(f"y = {self.pose.transform.translation.y}")
-
-        #     self.pub.publish( self.pose )
-        #     rate.sleep()
+            self.pub.publish( self.pose )
+            self.rate.sleep()
 
 #==============================================================================
 if __name__ == "__main__":
