@@ -25,7 +25,7 @@ class seeker_control_node():
 
         # Gain values to tune
         self.target_centered_tolerance = 0.1
-        self.seeker_gain = 0.07
+        self.seeker_gain = 0.03
 
         self.seeker_min = [0,0]
         self.seeker_max = [0,0]
