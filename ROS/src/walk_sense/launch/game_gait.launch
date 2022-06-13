@@ -1,0 +1,37 @@
+<launch>
+    <node
+        pkg="hardware_control"
+        name="move_motors_node"
+        type="move_motors_node.py"
+        output="screen"
+    />
+    <node
+        pkg="walk_sense"
+        name="gait_update_node"
+        type="gait_update_node.py"
+        output="screen"
+    />
+    <node
+        pkg="walk_sense"
+        name="pose_control_node"
+        type="pose_control_node.py"
+        output="screen"
+    />
+    <node
+        pkg="walk_sense"
+        name="manual_gait_control_node"
+        type="manual_gait_control_node.py"
+        output="screen"
+    />
+    <node
+        pkg="joy"
+        name="joy_node"
+        type="joy_node"
+        output="screen"
+    >
+        <param
+            name="joy_node/dev"
+            value="/dev/input/js0"
+        />
+    </node>
+</launch>

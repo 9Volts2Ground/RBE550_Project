@@ -1,0 +1,12 @@
+Controller name: /dev/input/jsX
+
+Test the controller: sudo jstest /dev/input/jsX
+
+Make it accessable: sudo chmod a+rw /dev/input/jsX
+
+Tell ROS which input to use: rosparam set joy_node/dev "/dev/input/jsX"
+
+runsrun joy joy_node
+    sensor_msgs/Joy 
+
+    
