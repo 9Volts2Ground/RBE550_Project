@@ -156,6 +156,11 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+# Gait update node C++ version
+add_executable( gait_update_node_cpp src/gait_update_node.cpp )
+target_link_libraries( gait_update_node_cpp ${catkin_LIBRARIES} )
+
+
 #############
 ## Install ##
 #############
