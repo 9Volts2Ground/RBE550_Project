@@ -3,35 +3,73 @@
 
 #include <sstream>
 
+#define LOG( x ) std::cout << x << std::endl;
+
+class gait_update_node{
+
+
+//-------------------------------------
+public:
+
+    //=====================================================
+    // Declare public variables
+    ros::NodeHandle node; // Initialize the ROS node
+
+    ros::Publisher pub_leg1;
+
+    ros::Rate loop_rate;
+
+    //=====================================================
+    // Class constructor
+    gait_update_node() : loop_rate(10) {
+
+        LOG( "calling constructor" )
+
+        // Publishes leg states
+        pub_leg1 = node.advertise<std_msgs::String>("leg_states0", 1);
+
+        // ros::Rate loop_rate(10);   // Controls how fast the node loops
+
+    };
+
+    //=====================================================
+    // Function to update gait state
+    void update_gait( ){
+
+        int count = 0;
+        while( ros::ok() )
+        {
+            std_msgs::String msg;
+            std::stringstream ss;
+
+            ss << "hello world " << count;
+
+            msg.data = ss.str();
+
+            pub_leg1.publish( msg );
+
+            ros::spinOnce();
+
+            loop_rate.sleep();
+            count++;
+        }
+
+    }
+};
+
+//=============================================================================
 int main( int argc, char **argv )
 {
 
-    ros::init( argc, argv, "talker" );
+    // Initialize ROS
+    ros::init( argc, argv, "gait_update_node_cpp" );
 
-    ros::NodeHandle n;
+    // Initialize your class with publishers and subscribers
+    gait_update_node node;
 
-    ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1);
+    node.update_gait();
 
-    ros::Rate loop_rate( 10 );
-
-    int count = 0;
-    while( ros::ok() )
-    {
-        std_msgs::String msg;
-        std::stringstream ss;
-
-        ss << "hello world " << count;
-
-        msg.data = ss.str();
-
-        chatter_pub.publish( msg );
-
-        ros::spinOnce();
-
-        loop_rate.sleep();
-        count++;
-
-    }
+    ros::spin();
 
     return 0;
 }
