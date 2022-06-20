@@ -15,7 +15,7 @@ public:
     // Declare public variables
     ros::NodeHandle node; // Initialize the ROS node
 
-    ros::Publisher pub_leg1;
+    std::array<ros::Publisher, 6>  pub_leg; // Each leg gets its own topic, so make an array of publishers
 
     ros::Rate loop_rate;
 
@@ -23,13 +23,13 @@ public:
     // Class constructor
     gait_update_node() : loop_rate(10) {
 
-        LOG( "calling constructor" )
-
         // Publishes leg states
-        pub_leg1 = node.advertise<std_msgs::String>("leg_states0", 1);
+        for ( int leg=0; leg < pub_leg.size(); leg++ ){
+            std::stringstream leg_state_num;
+            leg_state_num << "leg_state" << leg;
 
-        // ros::Rate loop_rate(10);   // Controls how fast the node loops
-
+            pub_leg[leg] = node.advertise<std_msgs::String>(leg_state_num.str(), 1);
+        }
     };
 
     //=====================================================
@@ -39,14 +39,17 @@ public:
         int count = 0;
         while( ros::ok() )
         {
-            std_msgs::String msg;
-            std::stringstream ss;
 
-            ss << "hello world " << count;
+            for ( int leg=0; leg < 6; leg++ ){
 
-            msg.data = ss.str();
+                std_msgs::String msg;
+                std::stringstream ss;
 
-            pub_leg1.publish( msg );
+                ss << "hello leg" << leg << " msg_num: " << count;
+                msg.data = ss.str();
+
+                pub_leg[leg].publish( msg ); // Print out
+            }
 
             ros::spinOnce();
 
