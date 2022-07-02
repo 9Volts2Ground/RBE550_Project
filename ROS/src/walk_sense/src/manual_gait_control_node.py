@@ -16,6 +16,7 @@ from hardware_control.msg import seeker_states
 hw_top = hw_topics()
 w_top = walk_topics.walk_topics()
 
+#==============================================================================
 class joy_stick():
     def __init__(self):
         ''' Define directions the joystick can go'''
@@ -23,6 +24,7 @@ class joy_stick():
         self.right_left = 0.0
         self.down = 0 # Center click joy stick
 
+#==============================================================================
 class xbox_controller():
     def __init__(self):
         self.l_stick = joy_stick()
@@ -30,7 +32,7 @@ class xbox_controller():
         self.d_pad = joy_stick()
         self.r_trigger = 0.0
         self.l_trigger = 0.0
-        
+
         # Buttons
         self.a = 0
         self.b = 0
@@ -56,10 +58,18 @@ class manual_gait_control_node():
         # Initialize gait twist state
         self.twist = TwistStamped()
         self.clear_twist()
-        
+
         # Define gait parameters/gains
-        self.max_velocity = 0.03 # m/s
-        self.max_angular_velocity = np.pi/8 # rad/s
+        self.max_velocity = 0.025 # m/s
+        self.max_angular_velocity = np.pi/10 # rad/s
+
+        self.max_body_height = 0.1 # m
+        self.pose_height_rate = 0.01 # m/s
+
+        # Time stamp, used to integrate positions
+        self.t = rospy.get_time()
+        self.t_previous = rospy.get_time()
+        self.dt = 0.0
 
         # Initialize seeker states
         self.skr_state = seeker_states() #  Initialize seeker state topic
@@ -79,6 +89,10 @@ class manual_gait_control_node():
         # Parse Joy inputs
         self.map_joy_to_xbox( joy )
 
+        # Calculate dt since last change
+        self.t = rospy.get_time()
+        self.dt = self.t - self.t_previous
+
         # ToDo: Calculate commanded body pose
         self.calculate_body_pose()
 
@@ -88,28 +102,33 @@ class manual_gait_control_node():
         # ToDo: Calculate commanded seeker angles
         self.calculate_seeker_states()
 
+        self.t_previous = self.t
+
     #======================================================
     def map_joy_to_xbox( self, joy ):
         ''' Unpackage the /joy topic to something useful'''
         self.xbox.l_stick.fwd_back = joy.axes[1]
         self.xbox.l_stick.right_left = -joy.axes[0]
         self.xbox.l_stick.down = joy.buttons[9]
-        
+
         self.xbox.r_stick.fwd_back = joy.axes[4]
         self.xbox.r_stick.right_left = -joy.axes[3]
         self.xbox.r_stick.down = joy.buttons[10]
-        
+
+        self.xbox.d_pad.fwd_back = joy.axes[7]
+        self.xbox.d_pad.right_left = -joy.axes[6]
+
         self.xbox.r_trigger = joy.axes[5]
         self.xbox.l_trigger = joy.axes[2]
-        
+
         self.xbox.a = joy.buttons[0]
         self.xbox.b = joy.buttons[1]
         self.xbox.x = joy.buttons[2]
         self.xbox.y = joy.buttons[3]
-        
+
         self.xbox.r_shoulder = joy.buttons[5]
         self.xbox.l_shoulder = joy.buttons[4]
-        
+
         self.xbox.center = joy.buttons[8]
         self.xbox.back = joy.buttons[6]
         self.xbox.home = joy.buttons[7]
@@ -117,6 +136,16 @@ class manual_gait_control_node():
     #======================================================
     def calculate_body_pose( self ):
         ''' Convert /joy topic into commanded body pose'''
+
+        self.pose.header.stamp = rospy.Time.now()
+
+        # D-pad controls body height
+        self.pose.transform.translation.z += self.xbox.d_pad.fwd_back * self.dt * self.pose_height_rate
+
+        # Keep the body pose reasonable
+        self.pose.transform.translation.z = np.max( [ np.min( [ self.pose.transform.translation.z,
+                                                               self.max_body_height ] ), 0.0 ] )
+
         self.pub_pose.publish( self.pose )
 
     #======================================================
@@ -124,13 +153,12 @@ class manual_gait_control_node():
         ''' Convert /joy topic into commanded twist vector'''
 
         # Calculate linear vector from left joystick
-        unscaled_linear_vec = np.array( [self.xbox.l_stick.right_left,
+        scaled_linear_vec = np.array( [self.xbox.l_stick.right_left,
                                          self.xbox.l_stick.fwd_back,
-                                         0.0 ] ) # No vertical velocity vector. We can't fly yet :/
-        scaled_linear_vec = unscaled_linear_vec * self.max_velocity / np.sqrt(2)
+                                         0.0 ] ) * self.max_velocity # No vertical velocity vector. We can't fly yet :/
         self.twist.twist.linear.x = scaled_linear_vec[0]
         self.twist.twist.linear.y = scaled_linear_vec[1]
-        
+
         # Calculate angular vector from right joystick
         # Note: positive Z is counter-clockwise, hence - right_left
         self.twist.twist.angular.z = -self.xbox.r_stick.right_left * self.max_angular_velocity

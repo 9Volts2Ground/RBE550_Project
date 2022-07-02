@@ -13,12 +13,6 @@
     />
     <node
         pkg="walk_sense"
-        name="pose_control_node"
-        type="pose_control_node.py"
-        output="screen"
-    />
-    <node
-        pkg="walk_sense"
         name="manual_gait_control_node"
         type="manual_gait_control_node.py"
         output="screen"
@@ -32,6 +26,10 @@
         <param
             name="dev"
             value="/dev/input/js4"
+        />
+        <param
+            name="autorepeat_rate"
+            value="10.0"
         />
     </node>
 </launch>
