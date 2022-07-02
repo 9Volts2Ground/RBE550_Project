@@ -30,8 +30,8 @@
         output="screen"
     >
         <param
-            name="joy_node/dev"
-            value="/dev/input/js0"
+            name="dev"
+            value="/dev/input/js4"
         />
     </node>
 </launch>
