@@ -60,7 +60,7 @@ class manual_gait_control_node():
         self.clear_twist()
 
         # Define gait parameters/gains
-        self.max_velocity = 0.025 # m/s
+        self.max_velocity = 0.05 # m/s
         self.max_angular_velocity = np.pi/10 # rad/s
 
         self.max_body_height = 0.1 # m

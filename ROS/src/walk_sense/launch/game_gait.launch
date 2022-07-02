@@ -25,7 +25,7 @@
     >
         <param
             name="dev"
-            value="/dev/input/js4"
+            value="/dev/input/js0"
         />
         <param
             name="autorepeat_rate"
