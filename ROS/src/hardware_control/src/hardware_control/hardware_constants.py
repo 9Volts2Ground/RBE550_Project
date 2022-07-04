@@ -16,13 +16,13 @@ class hardware_constants:
         self.num_joints = 3 # Number of joints in each leg
         self.num_seeker_joints = 2
 
-        # Vector from body center to hip joints, meters
-        self.s = np.array([ [ -0.055, 0.076162, 0.048 ],        # Front left
-                            [  0.055, 0.076162, 0.048 ],        # Front right
-                            [ -0.083376, 0.0, 0.048 ],         # Middle left
-                            [  0.083376, 0.0, 0.048 ],         # Middle right
-                            [ -0.055, -0.076162, 0.048 ],       # Back left
-                            [  0.055, -0.076162, 0.048 ] ] ).T  # Back right
+        # Vector from body center to hip joints, NWU coordinate frames, meters
+        self.s = np.array([ [ 0.076162, 0.055, 0.048 ],        # Front left
+                            [ 0.076162, -0.055, 0.048 ],        # Front right
+                            [ 0.0, 0.083376, 0.048 ],         # Middle left
+                            [ 0.0, -0.083376, 0.048 ],         # Middle right
+                            [ -0.076162, 0.055, 0.048 ],       # Back left
+                            [ -0.076162, -0.055, 0.048 ] ] ).T  # Back right
 
         # Leg link lengths, m
         self.L1 = 0.03226     # Coxa
@@ -80,12 +80,13 @@ class hardware_constants:
         # Seeker info
         #------------------------------------------------------------
         # Transformation from body frame to el motor axis
-        self.T_body2neck = np.array( [ [0.0, -1.0, 0.0, 0.0],
-                                       [1.0,  0.0, 0.0, self.s[1,0]],
-                                       [0.0,  0.0, 1.0, 0.13858],
-                                       [0.0,  0.0, 0.0, 1.0] ] )
+        self.T_body2neck = np.array( [ [1.0, 0.0, 0.0, self.s[0,0]],
+                                       [0.0, 1.0, 0.0, 0.0],
+                                       [0.0, 0.0, 1.0, 0.13858],
+                                       [0.0, 0.0, 0.0, 1.0] ] )
 
-        self.seeker_extension_length = 0.03226 # Length of extension from el motor axis to camera face
+        # ToDo: measure new Scarlet Witch crown value from CAD model
+        self.seeker_extension_length = 0.045 # Length of extension from el motor axis to camera face
 
         self.seeker_channel = np.array( [1, 0] )
 
@@ -147,5 +148,7 @@ class hardware_constants:
 
         return T_inertial2body
 
-
-
+#==============================================================================
+if __name__ == "__main__":
+    hrd = hardware_constants()
+    print("done")

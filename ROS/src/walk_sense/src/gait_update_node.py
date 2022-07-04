@@ -135,10 +135,10 @@ class gait_update_node():
                 foot_trans.transform.translation.x = foot_pos[0,leg]
                 foot_trans.transform.translation.y = foot_pos[1,leg]
                 foot_trans.transform.translation.z = foot_pos[2,leg]
-                foot_trans.transform.rotation.w = 0.0
                 foot_trans.transform.rotation.x = 0.0
                 foot_trans.transform.rotation.y = 0.0
-                foot_trans.transform.rotation.z = 1.0
+                foot_trans.transform.rotation.z = 0.0
+                foot_trans.transform.rotation.w = 1.0
                 self.tf2_broadcaster.sendTransform( foot_trans )
 
 

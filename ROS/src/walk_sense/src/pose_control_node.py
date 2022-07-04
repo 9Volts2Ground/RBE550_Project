@@ -45,10 +45,10 @@ class pose_control_node():
         self.pose.transform.translation.y = 0.0
         self.pose.transform.translation.z = 0.0
 
-        self.pose.transform.rotation.w = 0.0
         self.pose.transform.rotation.x = 0.0
         self.pose.transform.rotation.y = 0.0
-        self.pose.transform.rotation.z = 1.0
+        self.pose.transform.rotation.z = 0.0
+        self.pose.transform.rotation.w = 1.0
 
         desired_speed = 0.05 # m/s
 

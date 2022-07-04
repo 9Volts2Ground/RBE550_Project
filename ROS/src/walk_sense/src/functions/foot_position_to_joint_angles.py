@@ -22,14 +22,15 @@ def foot_position_to_joint_angles( foot_position_g, body_ground_transform ):
     """
 
     # Grab transformation matrix between body_ground and body frames
-    # ToDo: fill this in, euler -> R calculation
-    Tbg = quaternion_matrix( [ body_ground_transform.transform.rotation.w,
-                               body_ground_transform.transform.rotation.x,
+    Tbg = quaternion_matrix( [ body_ground_transform.transform.rotation.x,
                                body_ground_transform.transform.rotation.y,
-                               body_ground_transform.transform.rotation.z ] )
+                               body_ground_transform.transform.rotation.z,
+                               body_ground_transform.transform.rotation.w ] )
     Tbg[0:3,3] = -np.array( [ body_ground_transform.transform.translation.x,
                               body_ground_transform.transform.translation.y,
                               body_ground_transform.transform.translation.z ] ) # Mind your negatives
+
+
 
     # Grab joint angles from foot_position_g
     joint_angles = np.zeros( shape=(3,6) ) # Initialize array

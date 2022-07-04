@@ -153,9 +153,9 @@ class manual_gait_control_node():
         ''' Convert /joy topic into commanded twist vector'''
 
         # Calculate linear vector from left joystick
-        scaled_linear_vec = np.array( [self.xbox.l_stick.right_left,
-                                         self.xbox.l_stick.fwd_back,
-                                         0.0 ] ) * self.max_velocity # No vertical velocity vector. We can't fly yet :/
+        scaled_linear_vec = np.array( [ self.xbox.l_stick.fwd_back,
+                                       -self.xbox.l_stick.right_left,
+                                        0.0 ] ) * self.max_velocity # No vertical velocity vector. We can't fly yet :/
         self.twist.twist.linear.x = scaled_linear_vec[0]
         self.twist.twist.linear.y = scaled_linear_vec[1]
 

@@ -141,7 +141,7 @@ class walk_control_node():
         '''
         twist = self.init_twist()
 
-        twist.twist.linear.y = self.max_velocity # Command it to walk forward towards the target
+        twist.twist.linear.x = self.max_velocity # Command it to walk forward towards the target
 
         # Spin until we center the target in frame
         half_image_width = target_state.camera_width / 2
@@ -168,7 +168,7 @@ class walk_control_node():
         Move in the same direction you last saw the target
         '''
         twist = self.init_twist()
-        twist.twist.linear.y = self.max_velocity # Command it to walk forward, hoping the target is still there
+        twist.twist.linear.x = self.max_velocity # Command it to walk forward, hoping the target is still there
         twist.twist.angular.z = 0.2 * self.target_az_side # rad/s
         twist = self.scale_twist( twist )
         return twist
