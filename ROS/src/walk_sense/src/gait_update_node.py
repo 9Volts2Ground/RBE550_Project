@@ -5,9 +5,11 @@ import numpy as np
 import rospy
 from geometry_msgs.msg import TransformStamped
 from geometry_msgs.msg import TwistStamped
+import tf2_ros
 
 # Custom libraries and class instances
 from classes.gait import gait
+from classes.transformation_frames import transformation_frames
 from classes.walk_topics import walk_topics
 from functions.foot_position_to_joint_angles import *
 
@@ -17,10 +19,11 @@ from hardware_control import rotation
 from hardware_control.msg import leg_states # Custom ROS message types
 
 # Initialize classes
-hw_top = hw_topics()
-w_top = walk_topics()
 gt = gait()
+hw_top = hw_topics()
 hrd = hardware_constants.hardware_constants()
+tf = transformation_frames()
+w_top = walk_topics()
 
 #==============================================================================
 class gait_update_node():
@@ -59,6 +62,9 @@ class gait_update_node():
             self.lg_st_msg[leg].foot_position.y = gt.foot_center[1,leg]
             self.lg_st_msg[leg].foot_position.z = gt.foot_center[2,leg]
             self.lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
+
+        # tf2 broadcaster
+        self.tf2_broadcaster = tf2_ros.TransformBroadcaster()
 
         # Subscribe to walk control after initializing all your stuff
         rospy.Subscriber( w_top.walk_twist, TwistStamped, self.get_gait_twist )
@@ -120,6 +126,21 @@ class gait_update_node():
                 self.lg_st_msg[leg].foot_position.z = foot_pos[2,leg]
                 self.lg_st_msg[leg].joint_angle.position = joint_ang[:,leg]
                 self.pub[leg].publish( self.lg_st_msg[leg] ) # Publish the joint angles
+
+                # Publish foot position transformation, relative to ground frame
+                foot_trans = TransformStamped()
+                foot_trans.header.stamp = rospy.Time.now()
+                foot_trans.header.frame_id = tf.ground
+                foot_trans.child_frame_id = tf.foot[leg]
+                foot_trans.transform.translation.x = foot_pos[0,leg]
+                foot_trans.transform.translation.y = foot_pos[1,leg]
+                foot_trans.transform.translation.z = foot_pos[2,leg]
+                foot_trans.transform.rotation.w = 0.0
+                foot_trans.transform.rotation.x = 0.0
+                foot_trans.transform.rotation.y = 0.0
+                foot_trans.transform.rotation.z = 1.0
+                self.tf2_broadcaster.sendTransform( foot_trans )
+
 
             self.t_previous = t
             rate.sleep()
