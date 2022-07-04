@@ -1,7 +1,0 @@
-<launch>
-
-    <node pkg="package_test" name="publisher_test" type="publisher_test.py" />
-    <node pkg="package_test" name="subscriber_test" type="subscriber_test.py" output="screen" />
-    <node pkg="package_test" name="pub_sub" type="pub_sub.py" />
-
-</launch>
