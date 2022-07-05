@@ -131,7 +131,7 @@ class gait_update_node():
                 foot_trans = TransformStamped()
                 foot_trans.header.stamp = rospy.Time.now()
                 foot_trans.header.frame_id = tf.ground
-                foot_trans.child_frame_id = tf.foot[leg]
+                foot_trans.child_frame_id = tf.foot_ground[leg]
                 foot_trans.transform.translation.x = foot_pos[0,leg]
                 foot_trans.transform.translation.y = foot_pos[1,leg]
                 foot_trans.transform.translation.z = foot_pos[2,leg]
