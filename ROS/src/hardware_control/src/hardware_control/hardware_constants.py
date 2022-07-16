@@ -29,6 +29,19 @@ class hardware_constants:
         self.L2 = 0.090      # Femur
         self.L3 = 0.113     # Tibia
 
+        # Distance to link center of gravity.
+        # Current assumption is it is along vector from joint to joint. Will update later
+        self.servo_mass = 0.055 # kg
+        self.L1_m = self.servo_mass * 2
+        self.L1_cg = self.L1 / 2 # Assume cg is between the two servos. Neglect brackets for now
+
+        self.L2_m = 0.01312952 # kg
+        self.L2_cg = self.L2 / 2
+
+        self.L3_link_mass = 0.04475333 # kg
+        self.L3_m = self.L3_link_mass + self.servo_mass
+        self.L3_cg = ( self.servo_mass * self.L3/4 + self.L3_link_mass * self.L3/3 ) / self.L3_m
+
         # PWM channel for each motor
         self.legChannel = np.array( [ [ 16, 17, 18 ],       # Front left
                                       [ 15, 14, 13 ],       # Front right
