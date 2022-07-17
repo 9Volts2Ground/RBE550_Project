@@ -7,9 +7,10 @@ from geometry_msgs.msg import TransformStamped
 import tf2_ros
 
 # Custom libraries
-from classes.gait import gait
-from classes.transformation_frames import transformation_frames
-from classes.walk_topics import walk_topics
+from gait import gait
+from transformation_frames import transformation_frames
+from walk_topics import walk_topics
+
 gt = gait()
 tf = transformation_frames()
 w_top = walk_topics()

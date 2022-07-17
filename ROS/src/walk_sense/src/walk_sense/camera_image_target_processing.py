@@ -6,16 +6,16 @@ import rospy
 from sensor_msgs.msg import Image # Image is the message type
 
 # Custom libraries
-from classes import walk_topics
 from hardware_control import hardware_constants
 from hardware_control.hw_topics import hw_topics # List of acceptable channel names
 from walk_sense.msg import target_states
+from walk_topics import walk_topics
 
 #----------------------------------------
 # Set global flags and class instances
 hrd = hardware_constants.hardware_constants()
 hw_top = hw_topics()
-w_top = walk_topics.walk_topics()
+w_top = walk_topics()
 
 detection_radius = 50
 

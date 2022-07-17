@@ -6,15 +6,15 @@ import numpy as np
 import time
 from geometry_msgs.msg import TwistStamped
 
-from classes import walk_topics
 from hardware_control.hw_topics import hw_topics
 from hardware_control.msg import seeker_states
 from sensor_msgs.msg import Range # Standard ROS message type
 from walk_sense.msg import target_states
 from walk_sense.msg import target_track
+from walk_topics import walk_topics
 
 hw_top = hw_topics()
-w_top = walk_topics.walk_topics()
+w_top = walk_topics()
 
 #==============================================================================
 class walk_control_node():

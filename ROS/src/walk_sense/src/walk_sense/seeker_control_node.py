@@ -3,16 +3,16 @@
 import rospy
 import numpy as np
 
-from classes import walk_topics
 from hardware_control import hardware_constants
 from hardware_control.hw_topics import hw_topics
 from hardware_control.msg import seeker_states
 from walk_sense.msg import target_track
+from walk_topics import walk_topics
 
 # Initialize classes
 hrd = hardware_constants.hardware_constants()
 hw_top = hw_topics()
-w_top = walk_topics.walk_topics()
+w_top = walk_topics()
 
 #==============================================================================
 class seeker_control_node():

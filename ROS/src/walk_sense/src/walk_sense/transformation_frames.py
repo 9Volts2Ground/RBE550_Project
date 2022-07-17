@@ -12,4 +12,4 @@ class transformation_frames:
         self.knee = [f"knee{leg}" for leg in range( hrd.num_legs )]
         self.ankle = [f"ankle{leg}" for leg in range( hrd.num_legs )]
         self.foot = [f"foot{leg}" for leg in range( hrd.num_legs )]
-        self.foot_ground = [f"foot_ground{leg}" for leg in range( hrd.num_legs )]
+        self.foot_ground = [f"foot_ground{leg}" for leg in range( hrd.num_legs )] # Food frame referenced to the ground

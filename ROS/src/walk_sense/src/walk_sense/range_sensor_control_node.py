@@ -5,12 +5,12 @@ import numpy as np
 import rospy
 
 # Custom classes
-from classes import walk_topics
 from hardware_control import Ultrasonic
 from sensor_msgs.msg import Range
 from walk_sense.msg import target_track
+from walk_topics import walk_topics
 
-w_top = walk_topics.walk_topics()
+w_top = walk_topics()
 
 class range_sensor_control_node():
     def __init__(self):

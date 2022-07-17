@@ -8,14 +8,14 @@ from geometry_msgs.msg import TwistStamped
 import tf2_ros
 
 # Custom libraries and class instances
-from classes.gait import gait
-from classes.transformation_frames import transformation_frames
-from classes.walk_topics import walk_topics
-from functions.foot_position_to_joint_angles import *
+from gait import gait
+from transformation_frames import transformation_frames
+from foot_position_to_joint_angles import foot_position_to_joint_angles
+from walk_topics import walk_topics
 
-from hardware_control.hw_topics import hw_topics # List of acceptable channel names
 from hardware_control import hardware_constants
 from hardware_control import rotation
+from hardware_control.hw_topics import hw_topics # List of acceptable channel names
 from hardware_control.msg import leg_states # Custom ROS message types
 
 # Initialize classes
