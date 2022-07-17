@@ -131,11 +131,82 @@ class hardware_constants:
             T_body2shoulder [4x4 np array]: Transformation from body frame to shoulder joint of leg
         """
 
-        T_body2shoulder = np.array( [[ np.cos(self.alpha_offset[leg]), -np.sin(self.alpha_offset[leg]), 0, self.s[0,leg] ],
-                                     [ np.sin(self.alpha_offset[leg]),  np.cos(self.alpha_offset[leg]), 0, self.s[1,leg] ],
-                                     [ 0.0, 0.0, 1.0, self.s[2,leg] ],
-                                     [ 0.0, 0.0, 0.0, 1.0 ] ] )
+        c_alpha = np.cos( self.alpha_offset[leg] )
+        s_alpha = np.sin( self.alpha_offset[leg] )
+
+        T_body2shoulder = np.array( [[ c_alpha, -s_alpha, 0.0, self.s[0,leg] ],
+                                     [ s_alpha,  c_alpha, 0.0, self.s[1,leg] ],
+                                     [     0.0,      0.0, 1.0, self.s[2,leg] ],
+                                     [     0.0,      0.0, 0.0,           1.0 ] ] )
         return T_body2shoulder
+
+    #==========================================================================
+    def transform_shoulder2knee( self, angle, link_length = None ):
+        """Gets transformation matrix from shoulder joint to knee joint.
+        Option to change link length, like to use link CG instead of full length.
+        Defaults to L1
+        Args:
+            angle (float): Joint angle of shoulder joint (rad)
+            link_length (float, optional): Length of leg link. Defaults to L1.
+        Returns:
+            4x4 numpy array: Transformation matrix
+        """
+        if link_length is None:
+            link_length = self.L1
+
+        c_shoulder = np.cos( angle )
+        s_shoulder = np.sin( angle )
+
+        return np.array( [ [ c_shoulder, 0.0,  s_shoulder, link_length*c_shoulder ],
+                           [ s_shoulder, 0.0, -c_shoulder, link_length*s_shoulder ],
+                           [ 0.0,        1.0,         0.0,                     0.0],
+                           [ 0.0,        0.0,         0.0,                    1.0 ] ] )
+
+    #==========================================================================
+    def transform_knee2ankle( self, angle, link_length = None ):
+        """Gets transformation matrix from knee joint to ankle joint.
+        Option to change link length, like to use link CG instead of full length.
+        Defaults to L2
+        Args:
+            angle (float): Joint angle of knee joint (rad)
+            link_length (float, optional): Length of leg link. Defaults to L2.
+        Returns:
+            4x4 numpy array: Transformation matrix
+        """
+
+        if link_length is None:
+            link_length = self.L2
+
+        c_knee = np.cos( angle )
+        s_knee = np.sin( angle )
+
+        return np.array( [ [ c_knee,  s_knee,  0.0, link_length*c_knee ],
+                           [ s_knee, -c_knee,  0.0, link_length*s_knee ],
+                           [ 0.0,        0.0, -1.0,                0.0 ],
+                           [ 0.0,        0.0,  0.0,                1.0 ] ] )
+
+    #==========================================================================
+    def transform_ankle2foot( self, angle, link_length = None ):
+        """Gets transformation matrix from ankle joint to foot.
+        Option to change link length, like to use link CG instead of full length.
+        Defaults to L3
+        Args:
+            angle (float): Joint angle of ankle joint (rad)
+            link_length (float, optional): Length of leg link. Defaults to L3.
+        Returns:
+            4x4 numpy array: Transformation matrix
+        """
+
+        if link_length is None:
+            link_length = self.L3
+
+        c_ankle = np.cos( angle )
+        s_ankle = np.sin( angle )
+
+        return np.array( [ [ c_ankle, -s_ankle, 0.0, link_length*c_ankle ],
+                           [ s_ankle,  c_ankle, 0.0, link_length*s_ankle ],
+                           [ 0.0,          0.0, 1.0,                 0.0 ],
+                           [ 0.0,          0.0, 0.0,                 1.0 ] ] )
 
     #==========================================================================
     def rotation_inertial2body( self, body_state_inertial ):

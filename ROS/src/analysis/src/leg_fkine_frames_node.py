@@ -33,27 +33,10 @@ class leg_fkine_frames_node():
 
         T_body2shoulder = hrd.transform_body2shoulder( lg_st_msg.leg_num )
 
-        c_shoulder = np.cos( lg_st_msg.joint_angle.position[0] )
-        s_shoulder = np.sin( lg_st_msg.joint_angle.position[0] )
-        c_knee = np.cos( lg_st_msg.joint_angle.position[1] )
-        s_knee = np.sin( lg_st_msg.joint_angle.position[1] )
-        c_ankle = np.cos( lg_st_msg.joint_angle.position[2] )
-        s_ankle = np.sin( lg_st_msg.joint_angle.position[2] )
-
-        T_shoulder2knee = np.array( [ [ c_shoulder, 0.0, s_shoulder, hrd.L1*c_shoulder ],
-                                      [ s_shoulder, 0.0, -c_shoulder, hrd.L1*s_shoulder ],
-                                      [ 0.0, 1.0, 0.0, 0.0],
-                                      [ 0.0, 0.0, 0.0, 1.0 ] ] )
-
-        T_knee2ankle = np.array( [ [ c_knee, s_knee, 0.0, hrd.L2*c_knee ],
-                                   [ s_knee, -c_knee, 0.0, hrd.L2*s_knee ],
-                                   [ 0.0, 0.0, -1.0, 0.0 ],
-                                   [ 0.0, 0.0, 0.0, 1.0 ]] )
-
-        T_ankle2foot = np.array( [ [ c_ankle, -s_ankle, 0.0, hrd.L3*c_ankle ],
-                                   [ s_ankle, c_ankle, 0.0, hrd.L3*s_ankle],
-                                   [ 0.0, 0.0, 1.0, 0.0 ],
-                                   [ 0.0, 0.0, 0.0, 1.0 ] ] )
+        # Calculate transforms to each joint
+        T_shoulder2knee = hrd.transform_shoulder2knee( lg_st_msg.joint_angle.position[0] )
+        T_knee2ankle    = hrd.transform_knee2ankle(    lg_st_msg.joint_angle.position[1] )
+        T_ankle2foot    = hrd.transform_ankle2foot(    lg_st_msg.joint_angle.position[2] )
 
         # Calculate intermediate transforms
         T_body2knee = T_body2shoulder @ T_shoulder2knee
