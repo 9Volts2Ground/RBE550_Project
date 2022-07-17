@@ -7,23 +7,22 @@ import tf2_ros
 from tf.transformations import quaternion_from_matrix
 
 # Custom libraries and class instances
-from classes.transformation_frames import transformation_frames
 from hardware_control.hw_topics import hw_topics
 from hardware_control.msg import leg_states # Custom ROS message types
 from hardware_control import hardware_constants
+from walk_sense import transformation_frames
 
 # Initialize classes
 hrd = hardware_constants.hardware_constants()
 hw_top = hw_topics()
-tf = transformation_frames()
+tf = transformation_frames.transformation_frames()
 
 #==============================================================================
 class leg_fkine_frames_node():
     def __init__(self):
         rospy.init_node( "leg_fkine_frames_node", anonymous=True )
 
-         # tf2 broadcaster
-        self.tf2_broadcaster = tf2_ros.TransformBroadcaster()
+        self.tf2_broadcaster = [ tf2_ros.TransformBroadcaster() for leg in range( hrd.num_legs ) ]
 
         for leg in range( hrd.num_legs ):
             rospy.Subscriber( hw_top.leg_states[leg], leg_states, self.calc_leg_fkine )
@@ -31,10 +30,6 @@ class leg_fkine_frames_node():
 
     #==============================================================================
     def calc_leg_fkine( self, lg_st_msg ):
-
-        # Make 1 transform instance to save memory
-        trans = TransformStamped()
-        trans.header.stamp = rospy.Time.now()
 
         T_body2shoulder = hrd.transform_body2shoulder( lg_st_msg.leg_num )
 
@@ -66,17 +61,19 @@ class leg_fkine_frames_node():
         # T_body2foot = T_body2ankle @ T_ankle2foot
 
         # Broadcast body2knee
-        self.broadcast_fkine( trans, T_body2knee, tf.body, tf.knee[ lg_st_msg.leg_num ] )
+        self.broadcast_fkine( lg_st_msg.leg_num, T_body2knee, tf.body, tf.knee[ lg_st_msg.leg_num ] )
 
         # Broadcast knee2ankle
-        self.broadcast_fkine( trans, T_knee2ankle, tf.knee[ lg_st_msg.leg_num ], tf.ankle[ lg_st_msg.leg_num ] )
+        self.broadcast_fkine( lg_st_msg.leg_num, T_knee2ankle, tf.knee[ lg_st_msg.leg_num ], tf.ankle[ lg_st_msg.leg_num ] )
 
         # Broadcast ankle2foot
-        self.broadcast_fkine( trans, T_ankle2foot, tf.ankle[ lg_st_msg.leg_num ], tf.foot[ lg_st_msg.leg_num ] )
-
+        self.broadcast_fkine( lg_st_msg.leg_num, T_ankle2foot, tf.ankle[ lg_st_msg.leg_num ], tf.foot[ lg_st_msg.leg_num ] )
 
     #==============================================================================
-    def broadcast_fkine( self, trans, T_x2y, parent, child ):
+    def broadcast_fkine( self, leg_num, T_x2y, parent, child ):
+        trans = TransformStamped()
+        trans.header.stamp = rospy.Time.now()
+
         # Package and send Tb2k
         trans.header.frame_id = parent
         trans.child_frame_id = child
@@ -91,9 +88,7 @@ class leg_fkine_frames_node():
         trans.transform.rotation.z = q[2]
         trans.transform.rotation.w = q[3]
 
-        self.tf2_broadcaster.sendTransform( trans )
-
-
+        self.tf2_broadcaster[leg_num].sendTransform( trans )
 
 #==============================================================================
 if __name__ == "__main__":
